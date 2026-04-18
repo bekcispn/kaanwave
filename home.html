@@ -146,6 +146,39 @@
             background: rgba(255, 68, 68, 0.3);
         }
 
+        /* Categories */
+        .categories {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .category {
+            background: rgba(255, 140, 0, 0.1);
+            border: 1.5px solid rgba(255, 140, 0, 0.2);
+            padding: 10px 20px;
+            border-radius: 40px;
+            color: #FFD700;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .category:hover {
+            background: rgba(255, 140, 0, 0.2);
+            border-color: #FF8C00;
+        }
+
+        .category.active {
+            background: linear-gradient(135deg, #FFA500, #FF6B00);
+            color: white;
+        }
+
         /* Section Headers */
         .section-header {
             display: flex;
@@ -188,8 +221,8 @@
             aspect-ratio: 1;
             border-radius: 12px;
             margin-bottom: 15px;
-            box-shadow: 0 6px 0 #994C00;
             overflow: hidden;
+            box-shadow: 0 6px 0 #994C00;
         }
 
         .playlist-cover img {
@@ -274,6 +307,10 @@
         .track-artist {
             color: rgba(255, 255, 255, 0.5);
             font-size: 14px;
+        }
+
+        .track-duration {
+            color: rgba(255, 255, 255, 0.4);
         }
 
         /* Player Bar */
@@ -361,6 +398,20 @@
             color: #FFA500;
         }
 
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 140, 0, 0.2);
+            border-top-color: #FF8C00;
+            border-radius: 50%;
+            animation: spin 1s infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         /* Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
@@ -429,11 +480,49 @@
                 </div>
             </div>
 
-            <div class="section-header">
-                <h2>Öne Çıkan Playlist'ler</h2>
+            <div class="categories">
+                <span class="category active" onclick="loadCategory('pop')">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                        <circle cx="12" cy="12" r="10"/>
+                    </svg>
+                    Pop
+                </span>
+                <span class="category" onclick="loadCategory('rock')">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                        <path d="M12 2L2 7v10l10 5 10-5V7l-10-5z"/>
+                    </svg>
+                    Rock
+                </span>
+                <span class="category" onclick="loadCategory('hiphop')">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                        <rect x="4" y="4" width="16" height="16" rx="2"/>
+                    </svg>
+                    Hip-Hop
+                </span>
+                <span class="category" onclick="loadCategory('electronic')">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                        <path d="M20 12H4M12 4v16"/>
+                    </svg>
+                    Elektronik
+                </span>
+                <span class="category" onclick="loadCategory('turkish')">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                        <path d="M12 2v20M22 12H2"/>
+                    </svg>
+                    Türkçe
+                </span>
             </div>
 
-            <div class="playlist-grid" id="featured-playlists"></div>
+            <div class="section-header">
+                <h2>Öne Çıkan Albümler</h2>
+            </div>
+
+            <div class="playlist-grid" id="albums-grid">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Albümler yükleniyor...</p>
+                </div>
+            </div>
 
             <div class="section-header">
                 <h2>Popüler Şarkılar</h2>
@@ -445,10 +534,12 @@
                         <th>#</th>
                         <th>Şarkı</th>
                         <th>Albüm</th>
-                        <th></th>
+                        <th>Süre</th>
                     </tr>
                 </thead>
-                <tbody id="tracks-body"></tbody>
+                <tbody id="tracks-body">
+                    <tr><td colspan="4" class="loading">Şarkılar yükleniyor...</td></tr>
+                </tbody>
             </table>
         </div>
 
@@ -487,14 +578,6 @@
     <audio id="audio-player"></audio>
 
     <script>
-        const CLIENT_ID = '0c92e7e7d4b94e9f8e5b8e9f8e5b8e9f';
-        const CLIENT_SECRET = '4a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d';
-        
-        let accessToken = '';
-        let currentTrack = null;
-        let isPlaying = false;
-        let audio = document.getElementById('audio-player');
-
         // Kullanıcı kontrolü
         const user = localStorage.getItem('kaanwave_user');
         if (!user) {
@@ -504,134 +587,131 @@
             document.getElementById('userAvatar').textContent = user[0].toUpperCase();
         }
 
-        // Spotify Token Al
-        async function getAccessToken() {
+        let currentTrack = null;
+        let isPlaying = false;
+        let audio = document.getElementById('audio-player');
+        let currentPlaylist = [];
+        let currentIndex = 0;
+
+        // iTunes API'den veri çek
+        async function loadCategory(category = 'pop') {
+            // Kategori aktifliğini güncelle
+            document.querySelectorAll('.category').forEach(cat => cat.classList.remove('active'));
+            event.target.closest('.category').classList.add('active');
+
+            // Albümleri yükle
+            const albumsGrid = document.getElementById('albums-grid');
+            albumsGrid.innerHTML = '<div class="loading"><div class="spinner"></div><p>Albümler yükleniyor...</p></div>';
+
             try {
-                const response = await fetch('https://accounts.spotify.com/api/token', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'Authorization': 'Basic ' + btoa(CLIENT_ID + ':' + CLIENT_SECRET)
-                    },
-                    body: 'grant_type=client_credentials'
-                });
-                const data = await response.json();
-                accessToken = data.access_token;
-                loadContent();
+                // iTunes API - Top Albums
+                const albumsResponse = await fetch(`https://itunes.apple.com/search?term=${category}&entity=album&limit=6`);
+                const albumsData = await albumsResponse.json();
+                renderAlbums(albumsData.results);
+
+                // iTunes API - Top Songs
+                const songsResponse = await fetch(`https://itunes.apple.com/search?term=${category}&entity=song&limit=20`);
+                const songsData = await songsResponse.json();
+                renderTracks(songsData.results);
             } catch (error) {
-                console.error('Token error:', error);
-                loadFallbackContent();
+                console.error('API Error:', error);
+                loadFallbackData();
             }
         }
 
-        // Gerçek Spotify Verilerini Yükle
-        async function loadContent() {
-            try {
-                // Popüler şarkıları getir
-                const tracksResponse = await fetch('https://api.spotify.com/v1/playlists/37i9dQZF1DXcBWIGoYBM5M/tracks', {
-                    headers: { 'Authorization': 'Bearer ' + accessToken }
-                });
-                const tracksData = await tracksResponse.json();
-                renderTracks(tracksData.items);
-
-                // Öne çıkan playlist'leri getir
-                const playlistsResponse = await fetch('https://api.spotify.com/v1/browse/featured-playlists?limit=6', {
-                    headers: { 'Authorization': 'Bearer ' + accessToken }
-                });
-                const playlistsData = await playlistsResponse.json();
-                renderPlaylists(playlistsData.playlists.items);
-            } catch (error) {
-                console.error('API error:', error);
-                loadFallbackContent();
-            }
+        function renderAlbums(albums) {
+            const grid = document.getElementById('albums-grid');
+            grid.innerHTML = '';
+            
+            albums.forEach(album => {
+                const card = document.createElement('div');
+                card.className = 'playlist-card';
+                card.onclick = () => loadAlbumSongs(album.collectionId, album.collectionName);
+                card.innerHTML = `
+                    <div class="playlist-cover">
+                        <img src="${album.artworkUrl100.replace('100x100', '300x300')}" alt="${album.collectionName}">
+                    </div>
+                    <div class="playlist-title">${album.collectionName}</div>
+                    <div class="playlist-desc">${album.artistName}</div>
+                `;
+                grid.appendChild(card);
+            });
         }
 
-        function renderTracks(items) {
+        function renderTracks(tracks) {
             const tbody = document.getElementById('tracks-body');
             tbody.innerHTML = '';
             
-            items.slice(0, 10).forEach((item, index) => {
-                const track = item.track;
+            // Global playlist'i güncelle
+            currentPlaylist = tracks;
+            
+            tracks.slice(0, 15).forEach((track, index) => {
                 const tr = document.createElement('tr');
                 tr.className = 'track-row';
+                tr.onclick = () => playTrack(track, index);
+                
+                const minutes = Math.floor(track.trackTimeMillis / 60000);
+                const seconds = Math.floor((track.trackTimeMillis % 60000) / 1000);
+                const duration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
                 tr.innerHTML = `
                     <td>${index + 1}</td>
                     <td>
                         <div class="track-info">
                             <div class="track-cover">
-                                <img src="${track.album.images[0]?.url || 'https://via.placeholder.com/45/FF8C00/FFFFFF'}" alt="${track.name}">
+                                <img src="${track.artworkUrl100 || 'https://via.placeholder.com/45/FF8C00/FFFFFF'}" alt="${track.trackName}">
                             </div>
                             <div>
-                                <div class="track-name">${track.name}</div>
-                                <div class="track-artist">${track.artists.map(a => a.name).join(', ')}</div>
+                                <div class="track-name">${track.trackName}</div>
+                                <div class="track-artist">${track.artistName}</div>
                             </div>
                         </div>
                     </td>
-                    <td>${track.album.name}</td>
-                    <td>
-                        <button onclick="playTrack('${track.preview_url}', '${track.name}', '${track.artists[0].name}', '${track.album.images[0]?.url}')">▶</button>
-                    </td>
+                    <td>${track.collectionName || 'Single'}</td>
+                    <td class="track-duration">${duration}</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        function renderPlaylists(playlists) {
-            const container = document.getElementById('featured-playlists');
-            container.innerHTML = '';
-            
-            playlists.forEach(playlist => {
-                const card = document.createElement('div');
-                card.className = 'playlist-card';
-                card.innerHTML = `
-                    <div class="playlist-cover">
-                        <img src="${playlist.images[0]?.url || 'https://via.placeholder.com/180/FF8C00/FFFFFF'}" alt="${playlist.name}">
-                    </div>
-                    <div class="playlist-title">${playlist.name}</div>
-                    <div class="playlist-desc">${playlist.description || playlist.owner.display_name}</div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        function loadFallbackContent() {
-            // API çalışmazsa yedek veriler
-            const fallbackTracks = [
-                { name: "Blinding Lights", artist: "The Weeknd", album: "After Hours", cover: "https://i.scdn.co/image/ab67616d0000b2738863bc11d2aa12b54f5aeb36", preview: "https://p.scdn.co/mp3-preview/2c6e1d6c6e1d6c6e1d6c6e1d6c6e1d6c6e1d6c6e" },
-                { name: "Stay", artist: "The Kid LAROI", album: "F*CK LOVE", cover: "https://i.scdn.co/image/ab67616d0000b273ba266789471d8d9e3f1d9c1f", preview: "https://p.scdn.co/mp3-preview/3d7f2e6c3d7f2e6c3d7f2e6c3d7f2e6c3d7f2e6c" },
-                { name: "As It Was", artist: "Harry Styles", album: "Harry's House", cover: "https://i.scdn.co/image/ab67616d0000b273b5e8f8e9f8e5b8e9f8e5b8e9", preview: "https://p.scdn.co/mp3-preview/4e8f3a7d4e8f3a7d4e8f3a7d4e8f3a7d4e8f3a7d" }
-            ];
-            
+        async function loadAlbumSongs(collectionId, collectionName) {
             const tbody = document.getElementById('tracks-body');
-            tbody.innerHTML = '';
-            fallbackTracks.forEach((track, i) => {
-                const tr = document.createElement('tr');
-                tr.className = 'track-row';
-                tr.innerHTML = `
-                    <td>${i+1}</td>
-                    <td><div class="track-info"><div class="track-cover"><img src="${track.cover}"></div><div><div class="track-name">${track.name}</div><div class="track-artist">${track.artist}</div></div></div></td>
-                    <td>${track.album}</td>
-                    <td><button onclick="playTrack('${track.preview}', '${track.name}', '${track.artist}', '${track.cover}')">▶</button></td>
-                `;
-                tbody.appendChild(tr);
-            });
+            tbody.innerHTML = '<tr><td colspan="4" class="loading"><div class="spinner"></div><p>Albüm şarkıları yükleniyor...</p></td></tr>';
+            
+            try {
+                const response = await fetch(`https://itunes.apple.com/lookup?id=${collectionId}&entity=song`);
+                const data = await response.json();
+                // İlk eleman albüm bilgisi, diğerleri şarkılar
+                const songs = data.results.slice(1);
+                renderTracks(songs);
+            } catch (error) {
+                console.error('Album songs error:', error);
+            }
         }
 
-        function playTrack(preview, name, artist, cover) {
-            if (!preview) {
-                alert('Bu şarkının önizlemesi yok!');
+        function playTrack(track, index) {
+            currentTrack = track;
+            currentIndex = index;
+            
+            // Preview URL kontrolü
+            if (!track.previewUrl) {
+                alert('Bu şarkının önizlemesi mevcut değil!');
                 return;
             }
             
-            audio.src = preview;
+            audio.src = track.previewUrl;
             audio.play();
             isPlaying = true;
             
-            document.getElementById('player-title').textContent = name;
-            document.getElementById('player-artist').textContent = artist;
-            document.getElementById('player-cover').innerHTML = `<img src="${cover || 'https://via.placeholder.com/60/FF8C00/FFFFFF'}" alt="${name}">`;
+            document.getElementById('player-title').textContent = track.trackName;
+            document.getElementById('player-artist').textContent = track.artistName;
+            document.getElementById('player-cover').innerHTML = `<img src="${track.artworkUrl100.replace('100x100', '300x300') || 'https://via.placeholder.com/60/FF8C00/FFFFFF'}" alt="${track.trackName}">`;
             
             updatePlayButton();
+            
+            // Aktif track'i işaretle
+            document.querySelectorAll('.track-row').forEach(el => el.classList.remove('playing'));
+            event?.currentTarget?.classList.add('playing');
         }
 
         function togglePlay() {
@@ -657,11 +737,29 @@
         }
 
         function nextTrack() {
-            alert('Sonraki şarkıya geçiliyor...');
+            if (currentPlaylist.length > 0 && currentTrack) {
+                const nextIndex = (currentIndex + 1) % currentPlaylist.length;
+                playTrack(currentPlaylist[nextIndex], nextIndex);
+            }
         }
 
         function previousTrack() {
-            alert('Önceki şarkıya geçiliyor...');
+            if (currentPlaylist.length > 0 && currentTrack) {
+                const prevIndex = (currentIndex - 1 + currentPlaylist.length) % currentPlaylist.length;
+                playTrack(currentPlaylist[prevIndex], prevIndex);
+            }
+        }
+
+        function loadFallbackData() {
+            // API çalışmazsa yedek veri
+            const fallbackTracks = [
+                { trackName: "Flowers", artistName: "Miley Cyrus", collectionName: "Endless Summer Vacation", artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/2c/0e/1f/2c0e1f8e-5b8e-4e1f-8e5b-8e4e1f8e5b8e/196589246810.jpg/100x100bb.jpg", previewUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview122/v4/79/3c/71/793c7192-a418-8c1e-91fd-c69d8a39d8b5/mzaf_8733856475155602056.plus.aac.ep.m4a", trackTimeMillis: 200000 },
+                { trackName: "As It Was", artistName: "Harry Styles", collectionName: "Harry's House", artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/8e/72/08/8e7208ab-8284-2f34-8d0c-5a9e6a20e01f/196589246810.jpg/100x100bb.jpg", previewUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview112/v4/8e/72/08/8e7208ab-8284-2f34-8d0c-5a9e6a20e01f/mzaf_1852244752593361719.plus.aac.ep.m4a", trackTimeMillis: 167000 }
+            ];
+            renderTracks(fallbackTracks);
+            
+            const albumsGrid = document.getElementById('albums-grid');
+            albumsGrid.innerHTML = '<div class="playlist-card"><div class="playlist-cover"><img src="https://via.placeholder.com/180/FF8C00/FFFFFF?text=Album"></div><div class="playlist-title">Popüler Albümler</div><div class="playlist-desc">Çeşitli Sanatçılar</div></div>';
         }
 
         function logout() {
@@ -669,13 +767,14 @@
             window.location.href = 'index.html';
         }
 
-        audio.addEventListener('ended', () => {
-            isPlaying = false;
-            updatePlayButton();
-        });
+        audio.addEventListener('ended', nextTrack);
+        audio.addEventListener('pause', () => { isPlaying = false; updatePlayButton(); });
+        audio.addEventListener('play', () => { isPlaying = true; updatePlayButton(); });
 
-        // Sayfa yüklendiğinde
-        getAccessToken();
+        // Sayfa yüklendiğinde pop kategorisini yükle
+        window.onload = () => {
+            loadCategory('pop');
+        };
     </script>
 </body>
 </html>
