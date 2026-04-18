@@ -149,7 +149,10 @@
         .p-mid { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 12px; }
         .p-controls { display: flex; align-items: center; gap: 30px; }
         .p-btn { background: none; border: none; color: white; cursor: pointer; transition: 0.2s; }
-        .p-btn:hover { color: var(--orange); transform: scale(1.1); }
+        .login-btn:hover { background: var(--orange-glow); transform: scale(1.02); }
+        .login-err { color: #ff4444; font-size: 13px; margin-top: 10px; display: none; }
+        .remember-me { display: flex; align-items: center; gap: 8px; color: var(--text-sec); font-size: 14px; margin-top: 15px; cursor: pointer; }
+        .remember-me input { accent-color: var(--orange); width: 16px; height: 16px; }
         .p-play { width: 55px; height: 55px; background: var(--orange); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 0 20px var(--orange-glow); }
         .p-play:hover { transform: scale(1.1) rotate(5deg); }
 
@@ -188,20 +191,14 @@
     <!-- LOGIN SCREEN -->
     <div id="login-screen">
         <div class="login-card">
-            <div style="text-align: center; margin-bottom: 40px;">
-                <div style="font-size: 40px; font-weight: 900; color: var(--orange); margin-bottom: 10px;">KaanWave</div>
-                <p style="color: var(--text-sec);">Devam etmek için giriş yap</p>
-            </div>
-            <div class="input-group">
-                <label>Kullanıcı Adı</label>
-                <input type="text" id="username-in" placeholder="Kullanıcı adınız">
-            </div>
-            <div class="input-group">
-                <label>Şifre</label>
-                <input type="password" id="password-in" placeholder="••••••••">
-            </div>
-            <button class="login-btn" onclick="login()">Giriş Yap</button>
-            <p id="login-err" style="color: #ff4444; text-align: center; margin-top: 15px; font-size: 14px; display: none;"></p>
+            <h2 style="margin-bottom: 30px; font-size: 32px; text-align: center;">Giriş Yap</h2>
+            <input type="text" id="username-in" class="login-input" placeholder="Kullanıcı Adı">
+            <input type="password" id="password-in" class="login-input" placeholder="Şifre">
+            <label class="remember-me">
+                <input type="checkbox" id="rem-check" checked> Beni Hatırla
+            </label>
+            <button class="login-btn" onclick="login()">GİRİŞ YAP</button>
+            <div id="login-err" class="login-err"></div>
         </div>
     </div>
 
@@ -394,18 +391,21 @@
         async function primeAndStart() {
             const backup = document.getElementById('backup-player');
             if (backup) {
-                backup.src = "https://www.w3schools.com/tags/horse.mp3";
-                backup.volume = 0.01;
+                const vol = document.getElementById('vol-slider').value / 100;
+                backup.volume = vol;
                 try { await backup.play(); backup.pause(); } catch(e) {}
-            }
-            if (player && player.playVideo) {
-                try { player.playVideo(); player.pauseVideo(); } catch(e) {}
+                
+                // LOOP & NEXT ONARIMI
+                backup.onended = () => {
+                    if (isLooping) { backup.currentTime = 0; backup.play(); }
+                    else { next(); }
+                };
             }
             checkAuth();
         }
 
         function checkAuth() {
-            const user = localStorage.getItem('kaanwave_user');
+            const user = localStorage.getItem('kaanwave_user') || sessionStorage.getItem('kaanwave_user');
             const ws = document.getElementById('welcome-screen');
             if (user) {
                 if (ws) ws.style.opacity = '0';
@@ -419,8 +419,11 @@
         function login() {
             const u = document.getElementById('username-in').value;
             const p = document.getElementById('password-in').value;
+            const rem = document.getElementById('rem-check').checked;
             if (u && p) {
-                localStorage.setItem('kaanwave_user', u);
+                if (rem) localStorage.setItem('kaanwave_user', u);
+                else sessionStorage.setItem('kaanwave_user', u);
+                
                 document.getElementById('login-screen').style.opacity = '0';
                 setTimeout(() => { document.getElementById('login-screen').style.display = 'none'; showApp(u); }, 500);
             } else {
@@ -430,51 +433,33 @@
             }
         }
 
-        function logout() { localStorage.removeItem('kaanwave_user'); location.reload(); }
+        function logout() { 
+            localStorage.removeItem('kaanwave_user'); 
+            sessionStorage.removeItem('kaanwave_user');
+            location.reload(); 
+        }
 
-        let ytTimeout;
         function play(s, idx) {
             currentIdx = idx; currentSong = s;
             document.getElementById('p-art').src = s.cover;
             document.getElementById('p-title').innerText = s.title;
             document.getElementById('p-artist').innerText = s.artist;
             
-            // Backup Player (30s) hazırda beklesin
+            activePlayer = 'backup';
             const backup = document.getElementById('backup-player');
-            backup.pause();
             backup.src = s.preview;
-
-            activePlayer = 'yt';
-            
-            if (player && typeof player.loadVideoById === 'function') {
-                player.loadVideoById(s.id || 'H6Y0ZbeXGjE');
-                player.playVideo();
-                
-                // Smart Fallback: 2.5 saniye içinde YouTube başlamazsa Backup'a dön
-                clearTimeout(ytTimeout);
-                ytTimeout = setTimeout(() => {
-                    if (player.getCurrentTime() === 0 && isPlaying) {
-                        console.log("YouTube takıldı, yedeğe geçiliyor...");
-                        playBackup();
-                    }
-                }, 2500);
-
+            backup.play().then(() => {
                 isPlaying = true;
                 updatePlayBtn();
-            } else {
-                playBackup();
-            }
+            }).catch(e => console.log("Oynatma engellendi"));
         }
 
         function playBackup() {
-            activePlayer = 'backup';
+            // Backup zaten ana motor oldu
             const backup = document.getElementById('backup-player');
-            if (currentSong && currentSong.preview) {
-                backup.play().then(() => {
-                    isPlaying = true;
-                    updatePlayBtn();
-                }).catch(e => console.log("Otomatik oynatma engellendi"));
-            }
+            backup.play();
+            isPlaying = true;
+            updatePlayBtn();
         }
 
         function showApp(user) {
