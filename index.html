@@ -314,7 +314,7 @@
             </div>
             <div class="p-right">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-                <input type="range" min="0" max="100" value="100" oninput="setVol(this.value)" style="width: 100px;">
+                <input type="range" id="vol-slider" min="0" max="100" value="100" oninput="setVol(this.value)" style="width: 100px;">
             </div>
         </footer>
     </div>
@@ -391,11 +391,11 @@
         async function primeAndStart() {
             const backup = document.getElementById('backup-player');
             if (backup) {
-                const vol = document.getElementById('vol-slider').value / 100;
+                const volEl = document.getElementById('vol-slider');
+                const vol = volEl ? volEl.value / 100 : 0.8;
                 backup.volume = vol;
                 try { await backup.play(); backup.pause(); } catch(e) {}
                 
-                // LOOP & NEXT ONARIMI
                 backup.onended = () => {
                     if (isLooping) { backup.currentTime = 0; backup.play(); }
                     else { next(); }
