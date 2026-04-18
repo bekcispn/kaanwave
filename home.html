@@ -22,7 +22,6 @@
             min-height: 100vh;
         }
 
-        /* Sidebar */
         .sidebar {
             width: 260px;
             background: rgba(0, 0, 0, 0.5);
@@ -87,7 +86,6 @@
             height: 24px;
         }
 
-        /* Main Area */
         .main-area {
             flex: 1;
             margin-left: 260px;
@@ -146,7 +144,6 @@
             background: rgba(255, 68, 68, 0.3);
         }
 
-        /* Categories */
         .categories {
             display: flex;
             gap: 12px;
@@ -179,7 +176,6 @@
             color: white;
         }
 
-        /* Section Headers */
         .section-header {
             display: flex;
             justify-content: space-between;
@@ -193,7 +189,6 @@
             font-weight: 700;
         }
 
-        /* Playlist Grid */
         .playlist-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -243,7 +238,6 @@
             font-size: 13px;
         }
 
-        /* Tracks Table */
         .tracks-table {
             width: 100%;
             border-collapse: collapse;
@@ -313,7 +307,6 @@
             color: rgba(255, 255, 255, 0.4);
         }
 
-        /* Player Bar */
         .player-bar {
             position: fixed;
             bottom: 0;
@@ -391,7 +384,6 @@
             height: 40px;
         }
 
-        /* Loading */
         .loading {
             text-align: center;
             padding: 50px;
@@ -412,7 +404,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -493,11 +484,11 @@
                     </svg>
                     Rock
                 </span>
-                <span class="category" onclick="loadCategory('hiphop')">
+                <span class="category" onclick="loadCategory('rap')">
                     <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
                         <rect x="4" y="4" width="16" height="16" rx="2"/>
                     </svg>
-                    Hip-Hop
+                    Rap
                 </span>
                 <span class="category" onclick="loadCategory('electronic')">
                     <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
@@ -578,7 +569,6 @@
     <audio id="audio-player"></audio>
 
     <script>
-        // Kullanıcı kontrolü
         const user = localStorage.getItem('kaanwave_user');
         if (!user) {
             window.location.href = 'index.html';
@@ -593,29 +583,45 @@
         let currentPlaylist = [];
         let currentIndex = 0;
 
-        // iTunes API'den veri çek
+        // DEEZER API - CORS YOK, HIZLI, ÜCRETSİZ
         async function loadCategory(category = 'pop') {
-            // Kategori aktifliğini güncelle
             document.querySelectorAll('.category').forEach(cat => cat.classList.remove('active'));
             event.target.closest('.category').classList.add('active');
 
-            // Albümleri yükle
             const albumsGrid = document.getElementById('albums-grid');
             albumsGrid.innerHTML = '<div class="loading"><div class="spinner"></div><p>Albümler yükleniyor...</p></div>';
 
             try {
-                // iTunes API - Top Albums
-                const albumsResponse = await fetch(`https://itunes.apple.com/search?term=${category}&entity=album&limit=6`);
+                // Deezer API - Chart (Popüler Albümler)
+                const albumsResponse = await fetch(`https://api.deezer.com/chart/0/albums?limit=6`);
                 const albumsData = await albumsResponse.json();
-                renderAlbums(albumsData.results);
+                renderAlbums(albumsData.data);
 
-                // iTunes API - Top Songs
-                const songsResponse = await fetch(`https://itunes.apple.com/search?term=${category}&entity=song&limit=20`);
-                const songsData = await songsResponse.json();
-                renderTracks(songsData.results);
+                // Deezer API - Chart (Popüler Şarkılar)
+                const tracksResponse = await fetch(`https://api.deezer.com/chart/0/tracks?limit=20`);
+                const tracksData = await tracksResponse.json();
+                renderTracks(tracksData.data);
             } catch (error) {
                 console.error('API Error:', error);
                 loadFallbackData();
+            }
+        }
+
+        async function searchCategory(query) {
+            const albumsGrid = document.getElementById('albums-grid');
+            albumsGrid.innerHTML = '<div class="loading"><div class="spinner"></div><p>Aranıyor...</p></div>';
+
+            try {
+                // Deezer Search API
+                const albumsResponse = await fetch(`https://api.deezer.com/search/album?q=${query}&limit=6`);
+                const albumsData = await albumsResponse.json();
+                renderAlbums(albumsData.data);
+
+                const tracksResponse = await fetch(`https://api.deezer.com/search/track?q=${query}&limit=20`);
+                const tracksData = await tracksResponse.json();
+                renderTracks(tracksData.data);
+            } catch (error) {
+                console.error('Search Error:', error);
             }
         }
 
@@ -626,13 +632,13 @@
             albums.forEach(album => {
                 const card = document.createElement('div');
                 card.className = 'playlist-card';
-                card.onclick = () => loadAlbumSongs(album.collectionId, album.collectionName);
+                card.onclick = () => loadAlbumTracks(album.id, album.title);
                 card.innerHTML = `
                     <div class="playlist-cover">
-                        <img src="${album.artworkUrl100.replace('100x100', '300x300')}" alt="${album.collectionName}">
+                        <img src="${album.cover_medium}" alt="${album.title}">
                     </div>
-                    <div class="playlist-title">${album.collectionName}</div>
-                    <div class="playlist-desc">${album.artistName}</div>
+                    <div class="playlist-title">${album.title}</div>
+                    <div class="playlist-desc">${album.artist.name}</div>
                 `;
                 grid.appendChild(card);
             });
@@ -642,16 +648,15 @@
             const tbody = document.getElementById('tracks-body');
             tbody.innerHTML = '';
             
-            // Global playlist'i güncelle
             currentPlaylist = tracks;
             
-            tracks.slice(0, 15).forEach((track, index) => {
+            tracks.forEach((track, index) => {
                 const tr = document.createElement('tr');
                 tr.className = 'track-row';
                 tr.onclick = () => playTrack(track, index);
                 
-                const minutes = Math.floor(track.trackTimeMillis / 60000);
-                const seconds = Math.floor((track.trackTimeMillis % 60000) / 1000);
+                const minutes = Math.floor(track.duration / 60);
+                const seconds = track.duration % 60;
                 const duration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
                 
                 tr.innerHTML = `
@@ -659,33 +664,31 @@
                     <td>
                         <div class="track-info">
                             <div class="track-cover">
-                                <img src="${track.artworkUrl100 || 'https://via.placeholder.com/45/FF8C00/FFFFFF'}" alt="${track.trackName}">
+                                <img src="${track.album.cover_small}" alt="${track.title}">
                             </div>
                             <div>
-                                <div class="track-name">${track.trackName}</div>
-                                <div class="track-artist">${track.artistName}</div>
+                                <div class="track-name">${track.title}</div>
+                                <div class="track-artist">${track.artist.name}</div>
                             </div>
                         </div>
                     </td>
-                    <td>${track.collectionName || 'Single'}</td>
+                    <td>${track.album.title}</td>
                     <td class="track-duration">${duration}</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        async function loadAlbumSongs(collectionId, collectionName) {
+        async function loadAlbumTracks(albumId, albumTitle) {
             const tbody = document.getElementById('tracks-body');
             tbody.innerHTML = '<tr><td colspan="4" class="loading"><div class="spinner"></div><p>Albüm şarkıları yükleniyor...</p></td></tr>';
             
             try {
-                const response = await fetch(`https://itunes.apple.com/lookup?id=${collectionId}&entity=song`);
+                const response = await fetch(`https://api.deezer.com/album/${albumId}/tracks`);
                 const data = await response.json();
-                // İlk eleman albüm bilgisi, diğerleri şarkılar
-                const songs = data.results.slice(1);
-                renderTracks(songs);
+                renderTracks(data.data);
             } catch (error) {
-                console.error('Album songs error:', error);
+                console.error('Album tracks error:', error);
             }
         }
 
@@ -693,23 +696,21 @@
             currentTrack = track;
             currentIndex = index;
             
-            // Preview URL kontrolü
-            if (!track.previewUrl) {
+            if (!track.preview) {
                 alert('Bu şarkının önizlemesi mevcut değil!');
                 return;
             }
             
-            audio.src = track.previewUrl;
+            audio.src = track.preview;
             audio.play();
             isPlaying = true;
             
-            document.getElementById('player-title').textContent = track.trackName;
-            document.getElementById('player-artist').textContent = track.artistName;
-            document.getElementById('player-cover').innerHTML = `<img src="${track.artworkUrl100.replace('100x100', '300x300') || 'https://via.placeholder.com/60/FF8C00/FFFFFF'}" alt="${track.trackName}">`;
+            document.getElementById('player-title').textContent = track.title;
+            document.getElementById('player-artist').textContent = track.artist.name;
+            document.getElementById('player-cover').innerHTML = `<img src="${track.album.cover_medium}" alt="${track.title}">`;
             
             updatePlayButton();
             
-            // Aktif track'i işaretle
             document.querySelectorAll('.track-row').forEach(el => el.classList.remove('playing'));
             event?.currentTarget?.classList.add('playing');
         }
@@ -751,15 +752,14 @@
         }
 
         function loadFallbackData() {
-            // API çalışmazsa yedek veri
             const fallbackTracks = [
-                { trackName: "Flowers", artistName: "Miley Cyrus", collectionName: "Endless Summer Vacation", artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/2c/0e/1f/2c0e1f8e-5b8e-4e1f-8e5b-8e4e1f8e5b8e/196589246810.jpg/100x100bb.jpg", previewUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview122/v4/79/3c/71/793c7192-a418-8c1e-91fd-c69d8a39d8b5/mzaf_8733856475155602056.plus.aac.ep.m4a", trackTimeMillis: 200000 },
-                { trackName: "As It Was", artistName: "Harry Styles", collectionName: "Harry's House", artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/8e/72/08/8e7208ab-8284-2f34-8d0c-5a9e6a20e01f/196589246810.jpg/100x100bb.jpg", previewUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview112/v4/8e/72/08/8e7208ab-8284-2f34-8d0c-5a9e6a20e01f/mzaf_1852244752593361719.plus.aac.ep.m4a", trackTimeMillis: 167000 }
+                { title: "Flowers", artist: { name: "Miley Cyrus" }, album: { title: "Endless Summer Vacation", cover_small: "https://e-cdns-images.dzcdn.net/images/cover/4e8f3a7d4e8f3a7d4e8f3a7d4e8f3a7d/56x56-000000-80-0-0.jpg", cover_medium: "https://e-cdns-images.dzcdn.net/images/cover/4e8f3a7d4e8f3a7d4e8f3a7d4e8f3a7d/250x250-000000-80-0-0.jpg" }, preview: "https://cdns-preview-4.dzcdn.net/stream/c-4e8f3a7d4e8f3a7d4e8f3a7d4e8f3a7d-3.mp3", duration: 200 },
+                { title: "As It Was", artist: { name: "Harry Styles" }, album: { title: "Harry's House", cover_small: "https://e-cdns-images.dzcdn.net/images/cover/5f9a4b8c5f9a4b8c5f9a4b8c5f9a4b8c/56x56-000000-80-0-0.jpg", cover_medium: "https://e-cdns-images.dzcdn.net/images/cover/5f9a4b8c5f9a4b8c5f9a4b8c5f9a4b8c/250x250-000000-80-0-0.jpg" }, preview: "https://cdns-preview-5.dzcdn.net/stream/c-5f9a4b8c5f9a4b8c5f9a4b8c5f9a4b8c-3.mp3", duration: 167 }
             ];
             renderTracks(fallbackTracks);
             
-            const albumsGrid = document.getElementById('albums-grid');
-            albumsGrid.innerHTML = '<div class="playlist-card"><div class="playlist-cover"><img src="https://via.placeholder.com/180/FF8C00/FFFFFF?text=Album"></div><div class="playlist-title">Popüler Albümler</div><div class="playlist-desc">Çeşitli Sanatçılar</div></div>';
+            const grid = document.getElementById('albums-grid');
+            grid.innerHTML = '<div class="playlist-card"><div class="playlist-cover"><img src="https://via.placeholder.com/180/FF8C00/FFFFFF?text=Album"></div><div class="playlist-title">Popüler Albümler</div><div class="playlist-desc">Deezer Chart</div></div>';
         }
 
         function logout() {
@@ -771,9 +771,19 @@
         audio.addEventListener('pause', () => { isPlaying = false; updatePlayButton(); });
         audio.addEventListener('play', () => { isPlaying = true; updatePlayButton(); });
 
-        // Sayfa yüklendiğinde pop kategorisini yükle
         window.onload = () => {
             loadCategory('pop');
+        };
+
+        // Kategori fonksiyonlarını güncelle
+        window.loadCategory = function(cat) {
+            if (cat === 'turkish') {
+                searchCategory('turkish');
+            } else if (cat === 'pop') {
+                loadCategory('pop');
+            } else {
+                searchCategory(cat);
+            }
         };
     </script>
 </body>
