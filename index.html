@@ -3,59 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KaanWave - Müziğin Dalgası</title>
+    <title>KaanWave • Giriş</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
+            font-family: 'Segoe UI', 'Poppins', sans-serif;
         }
 
         body {
-            background: #0a0a0a;
+            background: linear-gradient(135deg, #0f0a00, #1a1000);
             min-height: 100vh;
-        }
-
-        /* LOGIN SCREEN */
-        #login-screen {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(135deg, #0f0a00 0%, #1a1000 100%);
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
         }
 
         .login-container {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+        }
+
+        .login-card {
             background: rgba(20, 15, 0, 0.95);
             backdrop-filter: blur(20px);
             border: 2px solid #FF8C00;
             border-radius: 30px;
-            padding: 50px 60px;
-            width: 100%;
-            max-width: 450px;
+            padding: 50px 40px;
             box-shadow: 0 20px 50px rgba(255, 140, 0, 0.3);
         }
 
-        .login-logo {
+        .login-header {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 15px;
+            gap: 12px;
             margin-bottom: 40px;
         }
 
-        .login-logo svg {
+        .logo-icon {
             width: 50px;
             height: 50px;
             filter: drop-shadow(0 0 20px #FF8C00);
         }
 
-        .login-logo h1 {
+        .login-header h1 {
             color: #FFA500;
-            font-size: 36px;
+            font-size: 32px;
             font-weight: 700;
         }
 
@@ -64,24 +60,27 @@
         }
 
         .input-group label {
-            display: block;
-            color: #FFB366;
-            margin-bottom: 8px;
-            font-size: 14px;
-            font-weight: 500;
             display: flex;
             align-items: center;
             gap: 8px;
+            color: #FFB366;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .input-group svg {
+            width: 18px;
+            height: 18px;
         }
 
         .input-group input {
             width: 100%;
-            padding: 15px 20px;
+            padding: 14px 18px;
             background: rgba(0, 0, 0, 0.3);
             border: 2px solid rgba(255, 140, 0, 0.3);
-            border-radius: 15px;
+            border-radius: 12px;
             color: white;
-            font-size: 16px;
+            font-size: 15px;
             outline: none;
             transition: all 0.3s;
         }
@@ -100,17 +99,17 @@
             padding: 15px;
             background: linear-gradient(135deg, #FFA500, #FF6B00);
             border: none;
-            border-radius: 15px;
+            border-radius: 12px;
             color: white;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            box-shadow: 0 5px 0 #994C00;
-            transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
+            box-shadow: 0 5px 0 #994C00;
+            transition: all 0.2s;
         }
 
         .login-btn:hover {
@@ -118,1006 +117,86 @@
             box-shadow: 0 7px 0 #994C00;
         }
 
-        .login-btn:active {
-            transform: translateY(3px);
-            box-shadow: 0 2px 0 #994C00;
+        .login-btn svg {
+            width: 20px;
+            height: 20px;
         }
 
-        .register-link {
-            text-align: center;
-            margin-top: 20px;
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        .register-link a {
-            color: #FFA500;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .error-message {
+        #error-message {
             color: #ff4444;
             text-align: center;
             margin-top: 15px;
             font-size: 14px;
         }
-
-        /* MAIN APP */
-        #app {
-            display: none;
-            width: 100%;
-            min-height: 100vh;
-            background: linear-gradient(180deg, #1a1000 0%, #0d0800 100%);
-        }
-
-        /* LOADING SCREEN */
-        #loading-screen {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(135deg, #0f0a00, #1a1000);
-            z-index: 999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .loading-content {
-            text-align: center;
-        }
-
-        .loading-spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid rgba(255, 140, 0, 0.2);
-            border-top-color: #FF8C00;
-            border-radius: 50%;
-            animation: spin 1s infinite;
-            margin: 0 auto 30px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .loading-text {
-            color: #FFA500;
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .loading-sub {
-            color: #FFB366;
-            font-size: 14px;
-        }
-
-        /* MAIN CONTENT */
-        #main-content {
-            display: flex;
-            opacity: 1;
-        }
-
-        /* SIDEBAR */
-        .sidebar {
-            width: 280px;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(20px);
-            border-right: 1px solid rgba(255, 140, 0, 0.2);
-            padding: 30px 0;
-            height: 100vh;
-            position: sticky;
-            top: 0;
-            overflow-y: auto;
-        }
-
-        .sidebar-logo {
-            padding: 0 20px 30px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .sidebar-logo svg {
-            width: 40px;
-            height: 40px;
-        }
-
-        .sidebar-logo span {
-            color: #FFA500;
-            font-size: 24px;
-            font-weight: 700;
-        }
-
-        .nav-menu {
-            padding: 0 15px;
-            margin-bottom: 30px;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 14px 18px;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 16px;
-            font-weight: 500;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .nav-item:hover {
-            background: rgba(255, 140, 0, 0.1);
-            color: #FFA500;
-        }
-
-        .nav-item.active {
-            background: rgba(255, 140, 0, 0.2);
-            color: #FFA500;
-            border-left: 4px solid #FF8C00;
-        }
-
-        .nav-item svg {
-            width: 24px;
-            height: 24px;
-        }
-
-        .playlist-section {
-            padding: 20px 15px;
-        }
-
-        .playlist-header {
-            color: rgba(255, 255, 255, 0.4);
-            font-size: 13px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            padding: 0 18px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .create-playlist-btn {
-            background: none;
-            border: none;
-            color: #FFA500;
-            cursor: pointer;
-            font-size: 20px;
-            padding: 5px;
-        }
-
-        .playlist-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 18px;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            border-radius: 8px;
-        }
-
-        .playlist-item:hover {
-            color: #FFA500;
-            background: rgba(255, 140, 0, 0.1);
-        }
-
-        .playlist-item.active {
-            color: #FFA500;
-            background: rgba(255, 140, 0, 0.15);
-        }
-
-        /* MAIN AREA */
-        .main-area {
-            flex: 1;
-            padding: 30px 40px;
-            max-height: 100vh;
-            overflow-y: auto;
-        }
-
-        .top-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .nav-arrows {
-            display: flex;
-            gap: 15px;
-        }
-
-        .arrow-btn {
-            width: 40px;
-            height: 40px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid rgba(255, 140, 0, 0.2);
-        }
-
-        .arrow-btn:hover {
-            background: rgba(255, 140, 0, 0.2);
-        }
-
-        .user-area {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 8px 15px;
-            border-radius: 30px;
-            border: 1px solid rgba(255, 140, 0, 0.2);
-            cursor: pointer;
-        }
-
-        .user-avatar {
-            width: 35px;
-            height: 35px;
-            background: linear-gradient(135deg, #FFA500, #FF6B00);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-        }
-
-        .logout-btn {
-            background: rgba(255, 68, 68, 0.2);
-            border: 1px solid #ff4444;
-            color: #ff4444;
-            padding: 8px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 14px;
-        }
-
-        .logout-btn:hover {
-            background: rgba(255, 68, 68, 0.3);
-        }
-
-        /* SEARCH */
-        .search-section {
-            margin-bottom: 40px;
-        }
-
-        .search-box {
-            max-width: 500px;
-            background: rgba(255, 140, 0, 0.08);
-            border: 2px solid rgba(255, 140, 0, 0.2);
-            border-radius: 50px;
-            padding: 14px 25px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .search-box:focus-within {
-            border-color: #FF8C00;
-            background: rgba(255, 140, 0, 0.12);
-        }
-
-        .search-box svg {
-            width: 22px;
-            height: 22px;
-        }
-
-        #search-input {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 16px;
-            width: 100%;
-            outline: none;
-        }
-
-        /* SECTION HEADERS */
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 30px 0 20px;
-        }
-
-        .section-header h2 {
-            color: white;
-            font-size: 26px;
-            font-weight: 700;
-        }
-
-        /* TRACKS TABLE */
-        .tracks-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .tracks-table thead {
-            border-bottom: 1px solid rgba(255, 140, 0, 0.3);
-        }
-
-        .tracks-table th {
-            text-align: left;
-            padding: 12px 15px;
-            color: rgba(255, 255, 255, 0.5);
-            font-weight: 500;
-            font-size: 13px;
-            text-transform: uppercase;
-        }
-
-        .track-row {
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .track-row:hover {
-            background: rgba(255, 140, 0, 0.1);
-        }
-
-        .track-row.playing {
-            background: rgba(255, 140, 0, 0.15);
-        }
-
-        .track-row td {
-            padding: 12px 15px;
-            border-bottom: 1px solid rgba(255, 140, 0, 0.1);
-        }
-
-        .track-info-cell {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .track-cover {
-            width: 45px;
-            height: 45px;
-            background: linear-gradient(135deg, #FFA500, #FF6B00);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 3px 0 #994C00;
-        }
-
-        .track-name {
-            color: white;
-            font-weight: 500;
-        }
-
-        .track-artist {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 14px;
-        }
-
-        .track-actions {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .add-to-playlist-btn {
-            background: none;
-            border: 1px solid #FFA500;
-            color: #FFA500;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            transition: all 0.2s;
-        }
-
-        .add-to-playlist-btn:hover {
-            background: #FFA500;
-            color: white;
-        }
-
-        /* MODAL */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background: #1a1000;
-            border: 2px solid #FF8C00;
-            border-radius: 20px;
-            padding: 30px;
-            width: 400px;
-            max-width: 90%;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-        }
-
-        .modal-header h3 {
-            color: #FFA500;
-            font-size: 20px;
-        }
-
-        .close-modal {
-            background: none;
-            border: none;
-            color: #FFA500;
-            font-size: 28px;
-            cursor: pointer;
-        }
-
-        .modal input {
-            width: 100%;
-            padding: 12px 15px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 2px solid rgba(255, 140, 0, 0.3);
-            border-radius: 10px;
-            color: white;
-            margin-bottom: 20px;
-        }
-
-        .modal button {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #FFA500, #FF6B00);
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        /* PLAYER BAR */
-        .player-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 90px;
-            background: rgba(0, 0, 0, 0.9);
-            backdrop-filter: blur(30px);
-            border-top: 2px solid #FF8C00;
-            display: flex;
-            align-items: center;
-            padding: 0 30px;
-            z-index: 100;
-        }
-
-        .now-playing-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            width: 280px;
-        }
-
-        .now-playing-cover {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #FFA500, #FF6B00);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 0 #994C00;
-        }
-
-        #player-title {
-            color: white;
-            font-weight: 600;
-        }
-
-        #player-artist {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 13px;
-        }
-
-        .player-controls {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-        }
-
-        .player-btn {
-            background: none;
-            border: none;
-            color: #FFA500;
-            font-size: 24px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .player-btn:hover {
-            color: #FFD700;
-            transform: scale(1.1);
-        }
-
-        .player-btn.play {
-            font-size: 40px;
-        }
-
-        /* SCROLLBAR */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #FF8C00;
-            border-radius: 4px;
-        }
     </style>
 </head>
 <body>
-    <!-- LOGIN SCREEN -->
-    <div id="login-screen">
-        <div class="login-container">
-            <div class="login-logo">
-                <svg width="50" height="50" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 4L4 8L12 12L20 8L12 4Z" fill="#FFA500"/>
-                    <path d="M4 12L12 16L20 12" stroke="#FF6B00" stroke-width="2" fill="none"/>
-                    <path d="M4 16L12 20L20 16" stroke="#FFA500" stroke-width="2" fill="none"/>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none">
+                    <defs>
+                        <linearGradient id="logoGrad" x1="4" y1="4" x2="20" y2="20">
+                            <stop offset="0%" stop-color="#FFA500"/>
+                            <stop offset="100%" stop-color="#FF6B00"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M12 4L4 8L12 12L20 8L12 4Z" fill="url(#logoGrad)"/>
+                    <path d="M4 12L12 16L20 12" stroke="#FFA500" stroke-width="2" fill="none"/>
+                    <path d="M4 16L12 20L20 16" stroke="#FF6B00" stroke-width="2" fill="none"/>
                 </svg>
                 <h1>KaanWave</h1>
             </div>
+            
             <div class="input-group">
                 <label>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#FFA500">
-                        <circle cx="12" cy="8" r="4" stroke="#FFA500" stroke-width="2" fill="none"/>
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="#FFA500" stroke-width="2" fill="none"/>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#FFA500" stroke-width="2">
+                        <circle cx="12" cy="8" r="4"/>
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                     </svg>
                     Kullanıcı Adı
                 </label>
-                <input type="text" id="username" placeholder="kullanici_adi" value="kaan">
+                <input type="text" id="username" placeholder="Kullanıcı adınız">
             </div>
+            
             <div class="input-group">
                 <label>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                        <rect x="3" y="11" width="18" height="11" rx="2" stroke="#FFA500" stroke-width="2"/>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="#FFA500" stroke-width="2"/>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#FFA500" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                     </svg>
                     Şifre
                 </label>
-                <input type="password" id="password" placeholder="••••••••" value="123456">
+                <input type="password" id="password" placeholder="••••••••">
             </div>
+            
             <button class="login-btn" onclick="login()">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3" stroke="white" stroke-width="2" fill="none"/>
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/>
                 </svg>
                 Giriş Yap
             </button>
-            <div class="register-link">
-                Hesabın yok mu? <a href="#" onclick="register()">Kayıt Ol</a>
-            </div>
-            <div id="login-error" class="error-message"></div>
+            
+            <div id="error-message"></div>
         </div>
     </div>
-
-    <!-- MAIN APP -->
-    <div id="app">
-        <!-- LOADING -->
-        <div id="loading-screen">
-            <div class="loading-content">
-                <div class="loading-spinner"></div>
-                <div class="loading-text">KaanWave Yükleniyor</div>
-                <div class="loading-sub">Müzikler hazırlanıyor...</div>
-            </div>
-        </div>
-
-        <!-- MAIN CONTENT -->
-        <div id="main-content">
-            <!-- SIDEBAR -->
-            <div class="sidebar">
-                <div class="sidebar-logo">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-                        <path d="M12 4L4 8L12 12L20 8L12 4Z" fill="#FFA500"/>
-                        <path d="M4 12L12 16L20 12" stroke="#FF6B00" stroke-width="2"/>
-                    </svg>
-                    <span>KaanWave</span>
-                </div>
-                <div class="nav-menu">
-                    <div class="nav-item active" onclick="switchTab('home')">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M3 12l9-9 9 9M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/>
-                        </svg>
-                        Ana Sayfa
-                    </div>
-                    <div class="nav-item" onclick="switchTab('search')">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                            <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2" fill="none"/>
-                            <path d="M21 21l-4-4"/>
-                        </svg>
-                        Ara
-                    </div>
-                    <div class="nav-item" onclick="switchTab('library')">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                            <rect x="3" y="3" width="8" height="8" rx="1"/>
-                            <rect x="13" y="3" width="8" height="8" rx="1"/>
-                            <rect x="3" y="13" width="8" height="8" rx="1"/>
-                            <rect x="13" y="13" width="8" height="8" rx="1"/>
-                        </svg>
-                        Kütüphanen
-                    </div>
-                </div>
-                <div class="playlist-section">
-                    <div class="playlist-header">
-                        <span>PLAYLIST'LERİN</span>
-                        <button class="create-playlist-btn" onclick="openCreatePlaylistModal()">+</button>
-                    </div>
-                    <div id="playlist-list"></div>
-                </div>
-            </div>
-
-            <!-- MAIN AREA -->
-            <div class="main-area">
-                <div class="top-header">
-                    <div class="nav-arrows">
-                        <div class="arrow-btn">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="#FFA500">
-                                <path d="M15 18l-6-6 6-6"/>
-                            </svg>
-                        </div>
-                        <div class="arrow-btn">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="#FFA500">
-                                <path d="M9 18l6-6-6-6"/>
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="user-area">
-                        <div class="user-profile">
-                            <div class="user-avatar" id="user-initial">K</div>
-                            <span id="display-username">Kaan</span>
-                        </div>
-                        <button class="logout-btn" onclick="logout()">Çıkış Yap</button>
-                    </div>
-                </div>
-
-                <div id="content-area">
-                    <div class="search-section">
-                        <div class="search-box">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="#FFA500">
-                                <circle cx="11" cy="11" r="8" stroke="#FFA500" stroke-width="2" fill="none"/>
-                                <path d="M21 21l-4-4"/>
-                            </svg>
-                            <input type="text" id="search-input" placeholder="Şarkı, sanatçı veya albüm ara...">
-                        </div>
-                    </div>
-
-                    <div class="section-header">
-                        <h2>Popüler Şarkılar</h2>
-                    </div>
-
-                    <table class="tracks-table">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Başlık</th>
-                                <th>Albüm</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody id="tracks-body"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- PLAYER BAR -->
-        <div class="player-bar">
-            <div class="now-playing-info">
-                <div class="now-playing-cover" id="player-cover">
-                    <svg width="30" height="30" viewBox="0 0 24 24" fill="white">
-                        <path d="M9 18V6l12 6-12 6z"/>
-                    </svg>
-                </div>
-                <div>
-                    <div id="player-title">Parça Seçilmedi</div>
-                    <div id="player-artist">KaanWave</div>
-                </div>
-            </div>
-            <div class="player-controls">
-                <button class="player-btn" onclick="previousTrack()">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19 6v12l-10-6 10-6zM5 6v12"/>
-                    </svg>
-                </button>
-                <button class="player-btn play" id="play-btn" onclick="togglePlay()">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
-                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
-                        <path d="M10 8l6 4-6 4V8z" fill="currentColor"/>
-                    </svg>
-                </button>
-                <button class="player-btn" onclick="nextTrack()">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M5 6v12l10-6-10-6zM19 6v12"/>
-                    </svg>
-                </button>
-            </div>
-            <div style="width: 280px;"></div>
-        </div>
-    </div>
-
-    <!-- CREATE PLAYLIST MODAL -->
-    <div id="playlist-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Yeni Playlist Oluştur</h3>
-                <button class="close-modal" onclick="closeModal()">&times;</button>
-            </div>
-            <input type="text" id="playlist-name" placeholder="Playlist adı">
-            <button onclick="createPlaylist()">Oluştur</button>
-        </div>
-    </div>
-
-    <audio id="audio-player"></audio>
 
     <script>
-        // USER DATA
-        let currentUser = null;
-        let users = JSON.parse(localStorage.getItem('kaanwave_users')) || {};
-        let playlists = JSON.parse(localStorage.getItem('kaanwave_playlists')) || {};
-        
-        // MUSIC DATA
-        const TRACKS = [
-            { id: 1, title: "Flowers", artist: "Miley Cyrus", album: "Endless Summer Vacation", preview: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview122/v4/79/3c/71/793c7192-a418-8c1e-91fd-c69d8a39d8b5/mzaf_8733856475155602056.plus.aac.ep.m4a", duration: "0:30" },
-            { id: 2, title: "As It Was", artist: "Harry Styles", album: "Harry's House", preview: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview112/v4/8e/72/08/8e7208ab-8284-2f34-8d0c-5a9e6a20e01f/mzaf_1852244752593361719.plus.aac.ep.m4a", duration: "0:30" },
-            { id: 3, title: "Blinding Lights", artist: "The Weeknd", album: "After Hours", preview: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview112/v4/d3/6a/bf/d36abf53-11c8-a4e9-6e66-f787bcfe38e9/mzaf_1650103741823680489.plus.aac.ep.m4a", duration: "0:30" },
-            { id: 4, title: "Stay", artist: "The Kid LAROI & Justin Bieber", album: "F*CK LOVE 3", preview: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview122/v4/95/18/f3/9518f3da-ff62-169f-68c1-c4dbb7f4da23/mzaf_1155385648758673618.plus.aac.ep.m4a", duration: "0:30" },
-            { id: 5, title: "Levitating", artist: "Dua Lipa", album: "Future Nostalgia", preview: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview112/v4/16/f6/92/16f692ee-5fbd-5f16-7b05-9dd58c2e53d5/mzaf_1814395094507165734.plus.aac.ep.m4a", duration: "0:30" }
-        ];
-
-        const audio = document.getElementById('audio-player');
-        let currentTrack = null;
-        let currentPlaylist = TRACKS;
-        let currentIndex = 0;
-        let isPlaying = false;
-
-        // LOGIN
         function login() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             
-            if (users[username] && users[username].password === password) {
-                currentUser = username;
-                if (!playlists[username]) playlists[username] = [];
-                localStorage.setItem('kaanwave_playlists', JSON.stringify(playlists));
-                showApp();
+            if (username && password) {
+                localStorage.setItem('kaanwave_user', username);
+                window.location.href = 'home.html';
             } else {
-                document.getElementById('login-error').textContent = 'Kullanıcı adı veya şifre hatalı!';
+                document.getElementById('error-message').textContent = 'Kullanıcı adı ve şifre girin!';
             }
         }
 
-        function register() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            
-            if (!username || !password) {
-                document.getElementById('login-error').textContent = 'Kullanıcı adı ve şifre girin!';
-                return;
-            }
-            
-            if (users[username]) {
-                document.getElementById('login-error').textContent = 'Bu kullanıcı adı zaten kullanılıyor!';
-                return;
-            }
-            
-            users[username] = { password: password };
-            playlists[username] = [];
-            localStorage.setItem('kaanwave_users', JSON.stringify(users));
-            localStorage.setItem('kaanwave_playlists', JSON.stringify(playlists));
-            currentUser = username;
-            showApp();
+        if (localStorage.getItem('kaanwave_user')) {
+            window.location.href = 'home.html';
         }
-
-        function showApp() {
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('app').style.display = 'block';
-            document.getElementById('display-username').textContent = currentUser;
-            document.getElementById('user-initial').textContent = currentUser[0].toUpperCase();
-            
-            setTimeout(() => {
-                document.getElementById('loading-screen').style.display = 'none';
-                renderTracks();
-                renderPlaylists();
-            }, 1500);
-        }
-
-        function logout() {
-            currentUser = null;
-            document.getElementById('app').style.display = 'none';
-            document.getElementById('login-screen').style.display = 'flex';
-            document.getElementById('loading-screen').style.display = 'flex';
-        }
-
-        // TRACKS
-        function renderTracks() {
-            const tbody = document.getElementById('tracks-body');
-            tbody.innerHTML = '';
-            
-            TRACKS.forEach((track, index) => {
-                const tr = document.createElement('tr');
-                tr.className = 'track-row';
-                tr.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>
-                        <div class="track-info-cell">
-                            <div class="track-cover">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-                                    <path d="M9 18V6l12 6-12 6z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <div class="track-name">${track.title}</div>
-                                <div class="track-artist">${track.artist}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>${track.album}</td>
-                    <td class="track-actions">
-                        <button class="add-to-playlist-btn" onclick="event.stopPropagation(); showAddToPlaylistMenu(${track.id})">+</button>
-                        <span>${track.duration}</span>
-                    </td>
-                `;
-                tr.onclick = () => playTrack(track, TRACKS, index);
-                tbody.appendChild(tr);
-            });
-        }
-
-        function playTrack(track, playlist, index) {
-            currentTrack = track;
-            currentPlaylist = playlist;
-            currentIndex = index;
-            
-            document.getElementById('player-title').textContent = track.title;
-            document.getElementById('player-artist').textContent = track.artist;
-            audio.src = track.preview;
-            audio.play();
-            isPlaying = true;
-            updatePlayButton();
-            
-            document.querySelectorAll('.track-row').forEach(el => el.classList.remove('playing'));
-            event?.currentTarget?.classList.add('playing');
-        }
-
-        function togglePlay() {
-            if (!currentTrack) {
-                playTrack(TRACKS[0], TRACKS, 0);
-                return;
-            }
-            
-            if (isPlaying) {
-                audio.pause();
-            } else {
-                audio.play();
-            }
-            isPlaying = !isPlaying;
-            updatePlayButton();
-        }
-
-        function updatePlayButton() {
-            const btn = document.getElementById('play-btn');
-            btn.innerHTML = isPlaying ? 
-                '<svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><rect x="8" y="8" width="3" height="8" fill="currentColor"/><rect x="13" y="8" width="3" height="8" fill="currentColor"/></svg>' :
-                '<svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><path d="M10 8l6 4-6 4V8z" fill="currentColor"/></svg>';
-        }
-
-        function nextTrack() {
-            if (currentPlaylist.length > 0) {
-                const nextIndex = (currentIndex + 1) % currentPlaylist.length;
-                playTrack(currentPlaylist[nextIndex], currentPlaylist, nextIndex);
-            }
-        }
-
-        function previousTrack() {
-            if (currentPlaylist.length > 0) {
-                const prevIndex = (currentIndex - 1 + currentPlaylist.length) % currentPlaylist.length;
-                playTrack(currentPlaylist[prevIndex], currentPlaylist, prevIndex);
-            }
-        }
-
-        // PLAYLISTS
-        function openCreatePlaylistModal() {
-            document.getElementById('playlist-modal').style.display = 'flex';
-        }
-
-        function closeModal() {
-            document.getElementById('playlist-modal').style.display = 'none';
-            document.getElementById('playlist-name').value = '';
-        }
-
-        function createPlaylist() {
-            const name = document.getElementById('playlist-name').value;
-            if (name && currentUser) {
-                playlists[currentUser].push({ name: name, tracks: [] });
-                localStorage.setItem('kaanwave_playlists', JSON.stringify(playlists));
-                renderPlaylists();
-                closeModal();
-            }
-        }
-
-        function renderPlaylists() {
-            const container = document.getElementById('playlist-list');
-            container.innerHTML = '';
-            
-            if (currentUser && playlists[currentUser]) {
-                playlists[currentUser].forEach((playlist, index) => {
-                    const div = document.createElement('div');
-                    div.className = 'playlist-item';
-                    div.innerHTML = `
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M9 18V6l12 6-12 6z"/>
-                        </svg>
-                        <span>${playlist.name}</span>
-                        <span style="margin-left: auto; font-size: 12px;">${playlist.tracks.length}</span>
-                    `;
-                    div.onclick = () => viewPlaylist(index);
-                    container.appendChild(div);
-                });
-            }
-        }
-
-        function viewPlaylist(index) {
-            const playlist = playlists[currentUser][index];
-            if (playlist.tracks.length > 0) {
-                currentPlaylist = playlist.tracks;
-                playTrack(currentPlaylist[0], currentPlaylist, 0);
-            }
-        }
-
-        function showAddToPlaylistMenu(trackId) {
-            if (!currentUser || playlists[currentUser].length === 0) {
-                alert('Önce bir playlist oluşturun!');
-                return;
-            }
-            
-            const track = TRACKS.find(t => t.id === trackId);
-            const playlistNames = playlists[currentUser].map(p => p.name);
-            const choice = prompt('Hangi playlist\'e eklemek istersiniz?\n' + playlistNames.map((n, i) => `${i+1}. ${n}`).join('\n'));
-            
-            if (choice) {
-                const index = parseInt(choice) - 1;
-                if (index >= 0 && index < playlists[currentUser].length) {
-                    if (!playlists[currentUser][index].tracks.find(t => t.id === trackId)) {
-                        playlists[currentUser][index].tracks.push(track);
-                        localStorage.setItem('kaanwave_playlists', JSON.stringify(playlists));
-                        renderPlaylists();
-                        alert(`${track.title} ${playlists[currentUser][index].name} playlist'ine eklendi!`);
-                    }
-                }
-            }
-        }
-
-        function switchTab(tab) {
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-        }
-
-        audio.addEventListener('ended', nextTrack);
-        audio.addEventListener('pause', () => { isPlaying = false; updatePlayButton(); });
-        audio.addEventListener('play', () => { isPlaying = true; updatePlayButton(); });
     </script>
 </body>
 </html>
