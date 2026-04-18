@@ -342,17 +342,19 @@
                             updatePlayBtn(); 
                             if (e.data === 0) { if (isLooping) player.playVideo(); else next(); }
                         },
-                        'onReady': () => { console.log("Elite Engine Ready"); }
+                        'onReady': () => { console.log("YT Hazır"); }
                     }
                 });
-            } catch(e) { console.log("YT Player init hatası"); }
+            } catch(e) { console.log("YT Başlatılamadı"); }
         };
 
         function toggleLoop() {
             isLooping = !isLooping;
             const btn = document.getElementById('loop-btn');
-            btn.style.color = isLooping ? 'var(--orange)' : 'white';
-            btn.style.filter = isLooping ? 'drop-shadow(0 0 5px var(--orange))' : 'none';
+            if (btn) {
+                btn.style.color = isLooping ? 'var(--orange)' : 'white';
+                btn.style.filter = isLooping ? 'drop-shadow(0 0 5px var(--orange))' : 'none';
+            }
         }
 
         function initLoading() {
@@ -360,22 +362,21 @@
             const txt = document.getElementById('l-text');
             let p = 0;
             const iv = setInterval(() => {
-                p += Math.floor(Math.random() * 6) + 3;
+                p += Math.floor(Math.random() * 5) + 2;
                 if (p >= 100) { 
                     p = 100; clearInterval(iv); 
                     startWelcome(); 
                 }
                 if (bar) bar.style.width = p + '%';
-                if (txt && Math.random() > 0.7) txt.innerText = LOAD_TEXTS[Math.floor(Math.random()*LOAD_TEXTS.length)];
-            }, 50);
+                if (txt && Math.random() > 0.8) txt.innerText = LOAD_TEXTS[Math.floor(Math.random()*LOAD_TEXTS.length)];
+            }, 40);
 
             const t = document.createElement('script');
             t.src = "https://www.youtube.com/iframe_api";
             document.body.appendChild(t);
         }
 
-        if (document.readyState === 'complete') initLoading();
-        else window.addEventListener('load', initLoading);
+        window.onload = initLoading;
 
         // 2. AUTH & SEQUENCE
         function startWelcome() {
@@ -385,22 +386,22 @@
             setTimeout(() => {
                 if (ls) ls.style.display = 'none';
                 if (ws) { ws.style.display = 'flex'; ws.style.opacity = '1'; }
-            }, 1000);
+            }, 800);
         }
         
         async function primeAndStart() {
-            const backup = document.getElementById('backup-player');
-            if (backup) {
-                const volEl = document.getElementById('vol-slider');
-                const vol = volEl ? volEl.value / 100 : 0.8;
-                backup.volume = vol;
-                try { await backup.play(); backup.pause(); } catch(e) {}
-                
-                backup.onended = () => {
-                    if (isLooping) { backup.currentTime = 0; backup.play(); }
-                    else { next(); }
-                };
-            }
+            console.log("Sistem başlatılıyor...");
+            try {
+                const backup = document.getElementById('backup-player');
+                if (backup) {
+                    backup.volume = 0.5;
+                    backup.onended = () => {
+                        if (isLooping) { backup.currentTime = 0; backup.play(); }
+                        else { next(); }
+                    };
+                }
+            } catch(e) { console.log("Sinyal hatası"); }
+            
             checkAuth();
         }
 
@@ -409,10 +410,10 @@
             const ws = document.getElementById('welcome-screen');
             if (user) {
                 if (ws) ws.style.opacity = '0';
-                setTimeout(() => { if (ws) ws.style.display = 'none'; showApp(user); }, 800);
+                setTimeout(() => { if (ws) ws.style.display = 'none'; showApp(user); }, 600);
             } else {
                 if (ws) ws.style.opacity = '0';
-                setTimeout(() => { if (ws) ws.style.display = 'none'; document.getElementById('login-screen').style.display = 'flex'; }, 800);
+                setTimeout(() => { if (ws) ws.style.display = 'none'; document.getElementById('login-screen').style.display = 'flex'; }, 600);
             }
         }
 
@@ -423,13 +424,11 @@
             if (u && p) {
                 if (rem) localStorage.setItem('kaanwave_user', u);
                 else sessionStorage.setItem('kaanwave_user', u);
-                
                 document.getElementById('login-screen').style.opacity = '0';
                 setTimeout(() => { document.getElementById('login-screen').style.display = 'none'; showApp(u); }, 500);
             } else {
                 const err = document.getElementById('login-err');
-                err.innerText = "Lütfen alanları doldurun!";
-                err.style.display = 'block';
+                if (err) { err.innerText = "Alanları doldurun!"; err.style.display = 'block'; }
             }
         }
 
@@ -440,6 +439,7 @@
         }
 
         function play(s, idx) {
+            if (!s) return;
             currentIdx = idx; currentSong = s;
             document.getElementById('p-art').src = s.cover;
             document.getElementById('p-title').innerText = s.title;
@@ -454,36 +454,29 @@
             }).catch(e => console.log("Oynatma engellendi"));
         }
 
-        function playBackup() {
-            // Backup zaten ana motor oldu
-            const backup = document.getElementById('backup-player');
-            backup.play();
-            isPlaying = true;
-            updatePlayBtn();
-        }
-
         function showApp(user) {
             document.getElementById('u-name').innerText = user;
             document.getElementById('u-avatar').innerText = user[0].toUpperCase();
             const app = document.getElementById('app-content');
-            app.style.display = 'flex';
-            setTimeout(() => app.style.opacity = '1', 50);
+            if (app) {
+                app.style.display = 'flex';
+                setTimeout(() => app.style.opacity = '1', 50);
+            }
             loadSongs('pop');
             setInterval(updateProgress, 1000);
         }
 
         // 3. NAVIGATION & UI
         async function nav(tab) {
-            document.getElementById('v-home').classList.add('hidden');
-            document.getElementById('v-explore').classList.add('hidden');
-            document.getElementById('v-lib').classList.add('hidden');
+            const views = ['home', 'explore', 'lib'];
+            views.forEach(v => document.getElementById('v-' + v).classList.add('hidden'));
             document.getElementById('v-' + tab).classList.remove('hidden');
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            event.currentTarget.classList.add('active');
+            if (event && event.currentTarget) event.currentTarget.classList.add('active');
             if (tab === 'lib') renderPlaylists();
         }
 
-        function setRegion(reg, btn) {
+        function setRegion(reg) {
             currentRegion = reg;
             document.getElementById('btn-tr').classList.toggle('active', reg === 'tr');
             document.getElementById('btn-us').classList.toggle('active', reg === 'us');
@@ -496,11 +489,10 @@
                 btn.classList.add('active');
             }
             const regName = currentRegion === 'tr' ? 'Yerli' : 'Yabancı';
-            document.getElementById('home-title').innerText = `${regName} • ${cat.toUpperCase()} Şarkılar`;
-            await loadSongs(cat);
+            document.getElementById('home-title').innerText = `${regName} • ${cat.toUpperCase()}`;
+            loadSongs(cat);
         }
 
-        // 4. MUSIC ENGINE
         async function loadSongs(term) {
             try {
                 const res = await fetch(`https://itunes.apple.com/search?term=${term}&entity=song&limit=20&country=${currentRegion}`);
@@ -516,12 +508,8 @@
         }
 
         function toggle() {
-            if (activePlayer === 'yt') {
-                if (isPlaying) player.pauseVideo(); else player.playVideo();
-            } else {
-                const backup = document.getElementById('backup-player');
-                if (isPlaying) backup.pause(); else backup.play();
-            }
+            const backup = document.getElementById('backup-player');
+            if (isPlaying) backup.pause(); else backup.play();
             isPlaying = !isPlaying;
             updatePlayBtn();
         }
@@ -536,13 +524,10 @@
         function prev() { if (SONGS_DATA.length > 0) { currentIdx = (currentIdx - 1 + SONGS_DATA.length) % SONGS_DATA.length; play(SONGS_DATA[currentIdx], currentIdx); } }
 
         function updateProgress() {
-            let cur = 0, dur = 0;
-            if (activePlayer === 'yt' && player && player.getCurrentTime) {
-                cur = player.getCurrentTime(); dur = player.getDuration();
-            } else {
-                const b = document.getElementById('backup-player');
-                cur = b.currentTime; dur = b.duration || 0;
-            }
+            const b = document.getElementById('backup-player');
+            if (!b) return;
+            const cur = b.currentTime;
+            const dur = b.duration || 0;
             if (dur > 0) {
                 document.getElementById('p-progress').style.width = (cur/dur*100) + '%';
                 document.getElementById('time-cur').innerText = formatTime(cur);
@@ -556,48 +541,50 @@
         }
 
         function setVol(v) {
-            if (activePlayer === 'yt' && player && player.setVolume) player.setVolume(v);
-            else document.getElementById('backup-player').volume = v / 100;
+            const b = document.getElementById('backup-player');
+            if (b) b.volume = v / 100;
         }
 
         function jump(e) {
+            const b = document.getElementById('backup-player');
             const rect = e.currentTarget.getBoundingClientRect();
             const pct = (e.clientX - rect.left) / rect.width;
-            if (activePlayer === 'yt') player.seekTo(pct * player.getDuration());
-            else document.getElementById('backup-player').currentTime = pct * document.getElementById('backup-player').duration;
+            if (b) b.currentTime = pct * b.duration;
         }
 
-        // 5. PLAYLIST SYSTEM
         function savePlaylists() { localStorage.setItem('sw_playlists', JSON.stringify(playlists)); }
         function createPlaylist() {
-            const name = prompt("Yeni Playlist Adı:");
+            const name = prompt("Liste Adı:");
             if (name && !playlists[name]) { playlists[name] = []; savePlaylists(); renderPlaylists(); }
         }
-        function addToPl(e, song) {
+        function addToPl(idx, songsJson) {
+            const song = SONGS_DATA[idx];
             const pl = Object.keys(playlists)[0];
-            if (!playlists[pl].find(i => i.title === song.title)) {
-                playlists[pl].push(song); savePlaylists(); alert(`"${song.title}" Favorilere eklendi!`);
+            if (song && !playlists[pl].find(i => i.title === song.title)) {
+                playlists[pl].push(song); savePlaylists(); alert("Eklendi!");
             }
         }
         function renderSongsToGrid(songs, gridId) {
             const grid = document.getElementById(gridId);
+            if (!grid) return;
             grid.innerHTML = '';
             songs.forEach((s, idx) => {
                 const c = document.createElement('div'); c.className = 'music-card';
-                c.innerHTML = `<img src="${s.cover}" class="card-art"><div class="card-t">${s.title}</div><div class="card-a">${s.artist}</div><button class="nav-item" style="margin-top:10px; font-size:11px; padding:6px; width:100%; justify-content:center;" onclick="event.stopPropagation(); addToPl(event, ${JSON.stringify(s).replace(/"/g, '&quot;')})">PL Ekle</button>`;
+                c.innerHTML = `<img src="${s.cover}" class="card-art"><div class="card-t">${s.title}</div><div class="card-a">${s.artist}</div><button class="nav-item" style="margin-top:10px; font-size:11px; padding:6px; width:100%; justify-content:center;" onclick="event.stopPropagation(); addToPl(${idx})">Favori</button>`;
                 c.onclick = () => play(s, idx);
                 grid.appendChild(c);
             });
         }
         function renderPlaylists() {
-            const grid = document.getElementById('grid-lib'); grid.innerHTML = '';
+            const grid = document.getElementById('grid-lib'); if (!grid) return;
+            grid.innerHTML = '';
             const addCard = document.createElement('div'); addCard.className = 'music-card';
             addCard.style.border = '2px dashed var(--orange)';
-            addCard.innerHTML = `<div class="card-art" style="background:none; display:flex; align-items:center; justify-content:center; font-size:40px;">+</div><div class="card-t">Yeni Playlist</div><div class="card-a">Liste Oluştur</div>`;
+            addCard.innerHTML = `<div class="card-art" style="display:flex; align-items:center; justify-content:center; font-size:40px;">+</div><div class="card-t">Yeni Liste</div>`;
             addCard.onclick = createPlaylist; grid.appendChild(addCard);
             Object.keys(playlists).forEach(name => {
                 const c = document.createElement('div'); c.className = 'music-card';
-                c.innerHTML = `<div class="card-art" style="background:linear-gradient(135deg, var(--orange), #994C00); display:flex; align-items:center; justify-content:center; font-size:40px;">📁</div><div class="card-t">${name}</div><div class="card-a">${playlists[name].length} Şarkı</div>`;
+                c.innerHTML = `<div class="card-art" style="background:var(--orange); display:flex; align-items:center; justify-content:center; font-size:40px;">📁</div><div class="card-t">${name}</div><div class="card-a">${playlists[name].length} Şarkı</div>`;
                 c.onclick = () => { document.getElementById('home-title').innerText = name; renderSongsToGrid(playlists[name], 'grid-home'); nav('home'); };
                 grid.appendChild(c);
             });
