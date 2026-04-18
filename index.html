@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SonicWave x KaanWave Elite</title>
+    <link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/bekcispn/sonicwave-assets/main/icon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --orange: #FF8C00;
+            --orange-glow: rgba(255, 140, 0, 0.4);
+            --dark: #0a0a0a;
+            --glass: rgba(20, 20, 20, 0.7);
+            --glass-border: rgba(255, 140, 0, 0.2);
+            --text-main: #FFFFFF;
+            --text-sec: rgba(255, 255, 255, 0.6);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; -webkit-font-smoothing: antialiased; }
+        
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background: var(--dark); 
+            color: var(--text-main); 
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* AURORA BACKGROUND */
+        .bg-aurora {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background: linear-gradient(45deg, #0f0a00, #1a1000, #0f0a00);
+            background-size: 400% 400%; animation: aurora 15s ease infinite;
+        }
+        @keyframes aurora {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* LOADING SCREEN */
+        #loading-screen {
+            position: fixed; inset: 0; background: #000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 3000; transition: all 1s ease;
+        }
+        .loading-logo { 
+            font-size: 60px; font-weight: 900; color: var(--orange); 
+            margin-bottom: 30px; letter-spacing: -2px; filter: drop-shadow(0 0 20px var(--orange-glow));
+        }
+        .progress-box { width: 300px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; position: relative; }
+        .progress-fill { position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: var(--orange); box-shadow: 0 0 15px var(--orange); transition: width 0.1s linear; }
+
+        /* WELCOME SCREEN */
+        #welcome-screen {
+            position: fixed; inset: 0; background: var(--dark);
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 2999; text-align: center; transition: opacity 0.8s ease;
+        }
+
+        /* LOGIN SCREEN */
+        #login-screen {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+            display: none; align-items: center; justify-content: center; z-index: 2500;
+        }
+        .login-card {
+            background: var(--glass); backdrop-filter: blur(40px);
+            border: 2px solid var(--orange); border-radius: 35px;
+            padding: 50px 40px; width: 420px; box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+            animation: cardIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes cardIn { from { opacity: 0; transform: translateY(30px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        
+        .input-group { margin-bottom: 25px; }
+        .input-group label { display: flex; align-items: center; gap: 8px; color: var(--orange); margin-bottom: 10px; font-weight: 600; font-size: 14px; }
+        .input-group input { 
+            width: 100%; padding: 16px 20px; background: rgba(255,255,255,0.05); 
+            border: 1px solid rgba(255,140,0,0.2); border-radius: 15px; color: white;
+            font-size: 16px; transition: 0.3s;
+        }
+        .input-group input:focus { border-color: var(--orange); background: rgba(255,140,0,0.1); }
+        
+        .login-btn {
+            width: 100%; padding: 16px; background: linear-gradient(135deg, var(--orange), #FF6B00);
+            border: none; border-radius: 15px; color: white; font-size: 16px; font-weight: 700;
+            cursor: pointer; transition: 0.3s; box-shadow: 0 10px 25px var(--orange-glow);
+        }
+        .login-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 35px var(--orange-glow); }
+
+        /* APP LAYOUT */
+        .app-shell { display: none; height: 100vh; width: 100vw; display: flex; opacity: 0; transition: opacity 1s; }
+        
+        .sidebar {
+            width: 280px; background: var(--glass); backdrop-filter: blur(30px);
+            border-right: 1px solid var(--glass-border); padding: 40px 20px;
+            display: flex; flex-direction: column; gap: 40px; z-index: 100;
+        }
+        .brand { font-size: 28px; font-weight: 900; color: var(--orange); display: flex; align-items: center; gap: 12px; }
+        
+        .nav-item {
+            display: flex; align-items: center; gap: 16px; padding: 14px 20px;
+            border-radius: 15px; color: var(--text-sec); text-decoration: none;
+            font-weight: 600; transition: 0.3s; cursor: pointer;
+        }
+        .nav-item:hover, .nav-item.active { background: rgba(255,140,0,0.1); color: var(--orange); }
+        .nav-item svg { width: 22px; height: 22px; }
+
+        .main-view { flex: 1; padding: 40px 50px; overflow-y: auto; padding-bottom: 150px; position: relative; }
+        
+        /* TOP BAR */
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .search-bar {
+            background: rgba(255,255,255,0.05); border-radius: 20px; padding: 12px 20px;
+            display: flex; align-items: center; gap: 15px; width: 100%; max-width: 500px;
+            border: 1px solid rgba(255,255,255,0.05); transition: 0.3s;
+        }
+        .search-bar:focus-within { border-color: var(--orange); background: rgba(255,255,255,0.1); width: 100%; max-width: 600px; }
+        .search-bar input { background: none; border: none; color: white; flex: 1; font-size: 16px; font-family: inherit; }
+
+        .user-pill {
+            display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.05);
+            padding: 8px 18px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .user-avatar { width: 32px; height: 32px; background: var(--orange); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; }
+
+        /* GRID & CARDS */
+        .section-h { font-size: 32px; font-weight: 800; margin-bottom: 30px; letter-spacing: -1px; }
+        .music-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 30px; }
+        .music-card {
+            background: rgba(255,255,255,0.03); border-radius: 25px; padding: 20px;
+            border: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .music-card:hover { transform: translateY(-10px); background: rgba(255,140,0,0.05); border-color: var(--orange); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+        .card-art { width: 100%; aspect-ratio: 1/1; border-radius: 18px; object-fit: cover; margin-bottom: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        .card-t { font-weight: 700; font-size: 17px; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-a { color: var(--text-sec); font-size: 14px; font-weight: 500; }
+
+        /* PLAYER BAR */
+        .player-bar {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 110px;
+            background: rgba(10, 10, 10, 0.9); backdrop-filter: blur(40px);
+            border-top: 1px solid var(--glass-border); display: flex; align-items: center;
+            padding: 0 40px; z-index: 1000;
+        }
+        .p-left { width: 30%; display: flex; align-items: center; gap: 20px; }
+        .p-art { width: 70px; height: 70px; border-radius: 15px; object-fit: cover; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        
+        .p-mid { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .p-controls { display: flex; align-items: center; gap: 30px; }
+        .p-btn { background: none; border: none; color: white; cursor: pointer; transition: 0.2s; }
+        .p-btn:hover { color: var(--orange); transform: scale(1.1); }
+        .p-play { width: 55px; height: 55px; background: var(--orange); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 0 20px var(--orange-glow); }
+        .p-play:hover { transform: scale(1.1) rotate(5deg); }
+
+        .progress-container { width: 100%; max-width: 600px; display: flex; align-items: center; gap: 15px; }
+        .progress-bar { flex: 1; height: 5px; background: rgba(255,255,255,0.1); border-radius: 10px; cursor: pointer; position: relative; }
+        .progress-current { position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: var(--orange); border-radius: 10px; box-shadow: 0 0 10px var(--orange); }
+        .p-time { font-size: 12px; color: var(--text-sec); font-weight: 600; width: 40px; }
+
+        .p-right { width: 30%; display: flex; justify-content: flex-end; align-items: center; gap: 15px; }
+        input[type="range"] { accent-color: var(--orange); cursor: pointer; }
+
+        #yt-api-player { width: 1px; height: 1px; opacity: 0.01; }
+
+        /* UTILS */
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="bg-aurora"></div>
+
+    <!-- LOADING SCREEN -->
+    <div id="loading-screen">
+        <div class="loading-logo">SonicWave Elite</div>
+        <div style="font-size: 18px; font-weight: 700; color: var(--orange); margin-bottom: 20px; opacity: 0.8;" id="l-text">Sistem hazırlanıyor...</div>
+        <div class="progress-box"><div class="progress-fill" id="l-bar"></div></div>
+    </div>
+
+    <!-- WELCOME SCREEN -->
+    <div id="welcome-screen">
+        <div style="font-size: 100px; font-weight: 900; color: var(--orange); filter: drop-shadow(0 0 30px var(--orange-glow));">SW</div>
+        <h2 style="font-size: 48px; font-weight: 900; margin-top: 20px;">Hoş Geldin Abican!</h2>
+        <p style="color: var(--text-sec); font-weight: 600; margin-top: 15px; font-size: 18px; margin-bottom: 30px;">En sevdiğin müzikler, elit bir dokunuşla hazırlandı.</p>
+        <button class="login-btn" style="width: auto; padding: 18px 50px;" onclick="primeAndStart()">SİSTEMİ BAŞLAT</button>
+    </div>
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen">
+        <div class="login-card">
+            <div style="text-align: center; margin-bottom: 40px;">
+                <div style="font-size: 40px; font-weight: 900; color: var(--orange); margin-bottom: 10px;">KaanWave</div>
+                <p style="color: var(--text-sec);">Devam etmek için giriş yap</p>
+            </div>
+            <div class="input-group">
+                <label>Kullanıcı Adı</label>
+                <input type="text" id="username-in" placeholder="Kullanıcı adınız">
+            </div>
+            <div class="input-group">
+                <label>Şifre</label>
+                <input type="password" id="password-in" placeholder="••••••••">
+            </div>
+            <button class="login-btn" onclick="login()">Giriş Yap</button>
+            <p id="login-err" style="color: #ff4444; text-align: center; margin-top: 15px; font-size: 14px; display: none;"></p>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div class="app-shell" id="app-content">
+        <div id="yt-api-player"></div>
+        
+        <aside class="sidebar">
+            <div class="brand">
+                <svg width="35" height="35" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="var(--orange)"/></svg>
+                SonicWave
+            </div>
+            <nav style="display: flex; flex-direction: column; gap: 8px;">
+                <div class="nav-item active" onclick="nav('home')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                    Ana Sayfa
+                </div>
+                <div class="nav-item" onclick="nav('explore')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    Keşfet
+                </div>
+                <div class="nav-item" onclick="nav('lib')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                    Kütüphane
+                </div>
+            </nav>
+            <div style="margin-top: auto; padding: 20px;">
+                <a href="#" onclick="logout()" style="color: #ff4444; text-decoration: none; font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 10px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+                    Çıkış Yap
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-view">
+            <div class="top-bar">
+                <div class="search-bar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="3"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" placeholder="Şarkı, sanatçı veya albüm ara..." id="s-input">
+                </div>
+                <div class="user-pill">
+                    <div class="user-avatar" id="u-avatar">K</div>
+                    <span style="font-weight: 700; font-size: 14px;" id="u-name">Kaan</span>
+                </div>
+            </div>
+
+            <!-- HOME VIEW -->
+            <div id="v-home">
+                <!-- Ana Filtre: Yerli / Yabancı -->
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button class="nav-item active" id="btn-tr" onclick="setRegion('tr', this)" style="padding: 10px 25px; border-radius: 50px;">Yerli</button>
+                    <button class="nav-item" id="btn-us" onclick="setRegion('us', this)" style="padding: 10px 25px; border-radius: 50px;">Yabancı</button>
+                </div>
+
+                <!-- Kategoriler -->
+                <div style="display: flex; gap: 12px; margin-bottom: 30px; overflow-x: auto; padding-bottom: 10px;" id="cat-bar">
+                    <button class="nav-item active" onclick="fetchByCat('pop', this)">Pop</button>
+                    <button class="nav-item" onclick="fetchByCat('rock', this)">Rock</button>
+                    <button class="nav-item" onclick="fetchByCat('hip hop', this)">Hip Hop</button>
+                    <button class="nav-item" onclick="fetchByCat('jazz', this)">Jazz</button>
+                    <button class="nav-item" onclick="fetchByCat('classical', this)">Classic</button>
+                    <button class="nav-item" onclick="fetchByCat('electronic', this)">Electronic</button>
+                </div>
+                <h2 class="section-h" id="home-title">Yerli • Pop Hit Şarkılar</h2>
+                <div class="music-grid" id="grid-home"></div>
+            </div>
+
+            <!-- EXPLORE VIEW -->
+            <div id="v-explore" class="hidden">
+                <h2 class="section-h">Arama Sonuçları</h2>
+                <div class="music-grid" id="grid-explore"></div>
+            </div>
+
+            <!-- LIBRARY VIEW -->
+            <div id="v-lib" class="hidden">
+                <h2 class="section-h">Kitaplığın</h2>
+                <div class="music-grid" id="grid-lib">
+                    <div class="music-card" style="grid-column: span 2; background: linear-gradient(135deg, #450af5, #8b5cf6);">
+                        <div style="height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 15px;">
+                            <svg width="60" height="60" viewBox="0 0 24 24" fill="white"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                            <h3 style="font-weight: 900;">Beğenilen Şarkılar</h3>
+                            <p style="opacity: 0.8; font-weight: 600;">45 Şarkı</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="player-bar">
+            <div class="p-left">
+                <img src="https://i.ytimg.com/vi/H6Y0ZbeXGjE/maxresdefault.jpg" class="p-art" id="p-art">
+                <div style="overflow: hidden;">
+                    <div class="card-t" id="p-title" style="margin-bottom: 2px;">Antidepresan</div>
+                    <div class="card-a" id="p-artist">Mabel Matiz</div>
+                </div>
+            </div>
+            <div class="p-mid">
+                <div class="p-controls">
+                    <button class="p-btn" id="loop-btn" onclick="toggleLoop()" title="Tekrarla">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 2l4 4-4 4"></path><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><path d="M7 22l-4-4 4-4"></path><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
+                    </button>
+                    <button class="p-btn" onclick="prev()"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 20L9 12l10-8v16zM5 20V4h2v16H5z"/></svg></button>
+                    <button class="p-btn p-play" onclick="toggle()"><svg width="30" height="30" viewBox="0 0 24 24" fill="white" id="p-icon-svg"><path d="M8 5v14l11-7z" id="p-icon-path"/></svg></button>
+                    <button class="p-btn" onclick="next()"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M5 4l10 8-10 8V4zm14 0h-2v16h2V4z"/></svg></button>
+                </div>
+                <div class="progress-container">
+                    <span class="p-time" id="time-cur">0:00</span>
+                    <div class="progress-bar" onclick="jump(event)">
+                        <div class="progress-current" id="p-progress"></div>
+                    </div>
+                    <span class="p-time" id="time-dur">0:00</span>
+                </div>
+            </div>
+            <div class="p-right">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                <input type="range" min="0" max="100" value="100" oninput="setVol(this.value)" style="width: 100px;">
+            </div>
+        </footer>
+    </div>
+
+    <!-- HIDDEN AUDIO FOR FALLBACK -->
+    <audio id="backup-player" style="display:none;"></audio>
+
+    <script>
+        let player, isPlaying = false, currentIdx = 0, activePlayer = 'backup';
+        let currentRegion = 'tr', currentSong = null, isLooping = false;
+        const SONGS_DATA = [];
+        let playlists = JSON.parse(localStorage.getItem('sw_playlists')) || { 'Favorilerim': [] };
+
+        const LOAD_TEXTS = ["Mikrofonlar açılıyor...", "Efektler ayarlanıyor...", "Notalar diziliyor...", "Elite motor başlatılıyor...", "Sistem hazırlanıyor..."];
+
+        // 1. SYSTEM INIT & LOADING
+        window.onYouTubeIframeAPIReady = function() {
+            try {
+                player = new YT.Player('yt-api-player', {
+                    height: '1', width: '1', videoId: 'H6Y0ZbeXGjE',
+                    playerVars: { 'autoplay': 0, 'controls': 0, 'rel': 0, 'enablejsapi': 1 },
+                    events: { 
+                        'onStateChange': (e) => { 
+                            isPlaying = (e.data === 1); 
+                            updatePlayBtn(); 
+                            if (e.data === 0) { if (isLooping) player.playVideo(); else next(); }
+                        },
+                        'onReady': () => { console.log("Elite Engine Ready"); }
+                    }
+                });
+            } catch(e) { console.log("YT Player init hatası"); }
+        };
+
+        function toggleLoop() {
+            isLooping = !isLooping;
+            const btn = document.getElementById('loop-btn');
+            btn.style.color = isLooping ? 'var(--orange)' : 'white';
+            btn.style.filter = isLooping ? 'drop-shadow(0 0 5px var(--orange))' : 'none';
+        }
+
+        function initLoading() {
+            const bar = document.getElementById('l-bar');
+            const txt = document.getElementById('l-text');
+            let p = 0;
+            const iv = setInterval(() => {
+                p += Math.floor(Math.random() * 6) + 3;
+                if (p >= 100) { 
+                    p = 100; clearInterval(iv); 
+                    startWelcome(); 
+                }
+                if (bar) bar.style.width = p + '%';
+                if (txt && Math.random() > 0.7) txt.innerText = LOAD_TEXTS[Math.floor(Math.random()*LOAD_TEXTS.length)];
+            }, 50);
+
+            const t = document.createElement('script');
+            t.src = "https://www.youtube.com/iframe_api";
+            document.body.appendChild(t);
+        }
+
+        if (document.readyState === 'complete') initLoading();
+        else window.addEventListener('load', initLoading);
+
+        // 2. AUTH & SEQUENCE
+        function startWelcome() {
+            const ls = document.getElementById('loading-screen');
+            const ws = document.getElementById('welcome-screen');
+            if (ls) ls.style.opacity = '0';
+            setTimeout(() => {
+                if (ls) ls.style.display = 'none';
+                if (ws) { ws.style.display = 'flex'; ws.style.opacity = '1'; }
+            }, 1000);
+        }
+        
+        async function primeAndStart() {
+            const backup = document.getElementById('backup-player');
+            if (backup) {
+                backup.src = "https://www.w3schools.com/tags/horse.mp3";
+                backup.volume = 0.01;
+                try { await backup.play(); backup.pause(); } catch(e) {}
+            }
+            if (player && player.playVideo) {
+                try { player.playVideo(); player.pauseVideo(); } catch(e) {}
+            }
+            checkAuth();
+        }
+
+        function checkAuth() {
+            const user = localStorage.getItem('kaanwave_user');
+            const ws = document.getElementById('welcome-screen');
+            if (user) {
+                if (ws) ws.style.opacity = '0';
+                setTimeout(() => { if (ws) ws.style.display = 'none'; showApp(user); }, 800);
+            } else {
+                if (ws) ws.style.opacity = '0';
+                setTimeout(() => { if (ws) ws.style.display = 'none'; document.getElementById('login-screen').style.display = 'flex'; }, 800);
+            }
+        }
+
+        function login() {
+            const u = document.getElementById('username-in').value;
+            const p = document.getElementById('password-in').value;
+            if (u && p) {
+                localStorage.setItem('kaanwave_user', u);
+                document.getElementById('login-screen').style.opacity = '0';
+                setTimeout(() => { document.getElementById('login-screen').style.display = 'none'; showApp(u); }, 500);
+            } else {
+                const err = document.getElementById('login-err');
+                err.innerText = "Lütfen alanları doldurun!";
+                err.style.display = 'block';
+            }
+        }
+
+        function logout() { localStorage.removeItem('kaanwave_user'); location.reload(); }
+
+        let ytTimeout;
+        function play(s, idx) {
+            currentIdx = idx; currentSong = s;
+            document.getElementById('p-art').src = s.cover;
+            document.getElementById('p-title').innerText = s.title;
+            document.getElementById('p-artist').innerText = s.artist;
+            
+            // Backup Player (30s) hazırda beklesin
+            const backup = document.getElementById('backup-player');
+            backup.pause();
+            backup.src = s.preview;
+
+            activePlayer = 'yt';
+            
+            if (player && typeof player.loadVideoById === 'function') {
+                player.loadVideoById(s.id || 'H6Y0ZbeXGjE');
+                player.playVideo();
+                
+                // Smart Fallback: 2.5 saniye içinde YouTube başlamazsa Backup'a dön
+                clearTimeout(ytTimeout);
+                ytTimeout = setTimeout(() => {
+                    if (player.getCurrentTime() === 0 && isPlaying) {
+                        console.log("YouTube takıldı, yedeğe geçiliyor...");
+                        playBackup();
+                    }
+                }, 2500);
+
+                isPlaying = true;
+                updatePlayBtn();
+            } else {
+                playBackup();
+            }
+        }
+
+        function playBackup() {
+            activePlayer = 'backup';
+            const backup = document.getElementById('backup-player');
+            if (currentSong && currentSong.preview) {
+                backup.play().then(() => {
+                    isPlaying = true;
+                    updatePlayBtn();
+                }).catch(e => console.log("Otomatik oynatma engellendi"));
+            }
+        }
+
+        function showApp(user) {
+            document.getElementById('u-name').innerText = user;
+            document.getElementById('u-avatar').innerText = user[0].toUpperCase();
+            const app = document.getElementById('app-content');
+            app.style.display = 'flex';
+            setTimeout(() => app.style.opacity = '1', 50);
+            loadSongs('pop');
+            setInterval(updateProgress, 1000);
+        }
+
+        // 3. NAVIGATION & UI
+        async function nav(tab) {
+            document.getElementById('v-home').classList.add('hidden');
+            document.getElementById('v-explore').classList.add('hidden');
+            document.getElementById('v-lib').classList.add('hidden');
+            document.getElementById('v-' + tab).classList.remove('hidden');
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            if (tab === 'lib') renderPlaylists();
+        }
+
+        function setRegion(reg, btn) {
+            currentRegion = reg;
+            document.getElementById('btn-tr').classList.toggle('active', reg === 'tr');
+            document.getElementById('btn-us').classList.toggle('active', reg === 'us');
+            fetchByCat(document.querySelector('#cat-bar .nav-item.active').innerText.toLowerCase());
+        }
+
+        async function fetchByCat(cat, btn) {
+            if (btn) {
+                document.querySelectorAll('#cat-bar .nav-item').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            }
+            const regName = currentRegion === 'tr' ? 'Yerli' : 'Yabancı';
+            document.getElementById('home-title').innerText = `${regName} • ${cat.toUpperCase()} Şarkılar`;
+            await loadSongs(cat);
+        }
+
+        // 4. MUSIC ENGINE
+        async function loadSongs(term) {
+            try {
+                const res = await fetch(`https://itunes.apple.com/search?term=${term}&entity=song&limit=20&country=${currentRegion}`);
+                const data = await res.json();
+                SONGS_DATA.length = 0;
+                const results = data.results.map(s => ({
+                    id: 'H6Y0ZbeXGjE', title: s.trackName, artist: s.artistName,
+                    cover: s.artworkUrl100.replace('100x100', '600x600'), preview: s.previewUrl
+                }));
+                SONGS_DATA.push(...results);
+                renderSongsToGrid(SONGS_DATA, 'grid-home');
+            } catch (e) { console.error(e); }
+        }
+
+        function toggle() {
+            if (activePlayer === 'yt') {
+                if (isPlaying) player.pauseVideo(); else player.playVideo();
+            } else {
+                const backup = document.getElementById('backup-player');
+                if (isPlaying) backup.pause(); else backup.play();
+            }
+            isPlaying = !isPlaying;
+            updatePlayBtn();
+        }
+
+        function updatePlayBtn() {
+            const path = document.getElementById('p-icon-path');
+            if (isPlaying) path.setAttribute('d', 'M6 19h4V5H6v14zm8-14v14h4V5h-4z');
+            else path.setAttribute('d', 'M8 5v14l11-7z');
+        }
+
+        function next() { if (SONGS_DATA.length > 0) { currentIdx = (currentIdx + 1) % SONGS_DATA.length; play(SONGS_DATA[currentIdx], currentIdx); } }
+        function prev() { if (SONGS_DATA.length > 0) { currentIdx = (currentIdx - 1 + SONGS_DATA.length) % SONGS_DATA.length; play(SONGS_DATA[currentIdx], currentIdx); } }
+
+        function updateProgress() {
+            let cur = 0, dur = 0;
+            if (activePlayer === 'yt' && player && player.getCurrentTime) {
+                cur = player.getCurrentTime(); dur = player.getDuration();
+            } else {
+                const b = document.getElementById('backup-player');
+                cur = b.currentTime; dur = b.duration || 0;
+            }
+            if (dur > 0) {
+                document.getElementById('p-progress').style.width = (cur/dur*100) + '%';
+                document.getElementById('time-cur').innerText = formatTime(cur);
+                document.getElementById('time-dur').innerText = formatTime(dur);
+            }
+        }
+
+        function formatTime(s) {
+            const m = Math.floor(s / 60); const sec = Math.floor(s % 60);
+            return `${m}:${sec < 10 ? '0' : ''}${sec}`;
+        }
+
+        function setVol(v) {
+            if (activePlayer === 'yt' && player && player.setVolume) player.setVolume(v);
+            else document.getElementById('backup-player').volume = v / 100;
+        }
+
+        function jump(e) {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const pct = (e.clientX - rect.left) / rect.width;
+            if (activePlayer === 'yt') player.seekTo(pct * player.getDuration());
+            else document.getElementById('backup-player').currentTime = pct * document.getElementById('backup-player').duration;
+        }
+
+        // 5. PLAYLIST SYSTEM
+        function savePlaylists() { localStorage.setItem('sw_playlists', JSON.stringify(playlists)); }
+        function createPlaylist() {
+            const name = prompt("Yeni Playlist Adı:");
+            if (name && !playlists[name]) { playlists[name] = []; savePlaylists(); renderPlaylists(); }
+        }
+        function addToPl(e, song) {
+            const pl = Object.keys(playlists)[0];
+            if (!playlists[pl].find(i => i.title === song.title)) {
+                playlists[pl].push(song); savePlaylists(); alert(`"${song.title}" Favorilere eklendi!`);
+            }
+        }
+        function renderSongsToGrid(songs, gridId) {
+            const grid = document.getElementById(gridId);
+            grid.innerHTML = '';
+            songs.forEach((s, idx) => {
+                const c = document.createElement('div'); c.className = 'music-card';
+                c.innerHTML = `<img src="${s.cover}" class="card-art"><div class="card-t">${s.title}</div><div class="card-a">${s.artist}</div><button class="nav-item" style="margin-top:10px; font-size:11px; padding:6px; width:100%; justify-content:center;" onclick="event.stopPropagation(); addToPl(event, ${JSON.stringify(s).replace(/"/g, '&quot;')})">PL Ekle</button>`;
+                c.onclick = () => play(s, idx);
+                grid.appendChild(c);
+            });
+        }
+        function renderPlaylists() {
+            const grid = document.getElementById('grid-lib'); grid.innerHTML = '';
+            const addCard = document.createElement('div'); addCard.className = 'music-card';
+            addCard.style.border = '2px dashed var(--orange)';
+            addCard.innerHTML = `<div class="card-art" style="background:none; display:flex; align-items:center; justify-content:center; font-size:40px;">+</div><div class="card-t">Yeni Playlist</div><div class="card-a">Liste Oluştur</div>`;
+            addCard.onclick = createPlaylist; grid.appendChild(addCard);
+            Object.keys(playlists).forEach(name => {
+                const c = document.createElement('div'); c.className = 'music-card';
+                c.innerHTML = `<div class="card-art" style="background:linear-gradient(135deg, var(--orange), #994C00); display:flex; align-items:center; justify-content:center; font-size:40px;">📁</div><div class="card-t">${name}</div><div class="card-a">${playlists[name].length} Şarkı</div>`;
+                c.onclick = () => { document.getElementById('home-title').innerText = name; renderSongsToGrid(playlists[name], 'grid-home'); nav('home'); };
+                grid.appendChild(c);
+            });
+        }
+
+        document.getElementById('s-input').onkeydown = async (e) => {
+            if (e.key === 'Enter') {
+                const q = e.target.value;
+                const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&entity=song&limit=20`);
+                const data = await res.json();
+                const results = data.results.map(item => ({
+                    title: item.trackName, artist: item.artistName, cover: item.artworkUrl100.replace('100x100', '600x600'),
+                    id: 'H6Y0ZbeXGjE', preview: item.previewUrl
+                }));
+                renderSongsToGrid(results, 'grid-explore');
+                nav('explore');
+            }
+        };
+    </script>
+</body>
+</html>
