@@ -168,6 +168,77 @@
 
         /* UTILS */
         .hidden { display: none !important; }
+
+        /* MOBILE & TABLET RESPONSIVENESS */
+        
+        /* TABLET (769px - 1024px) */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .sidebar { width: 220px; padding: 30px 15px; }
+            .brand { font-size: 22px; }
+            .nav-item { padding: 12px 15px; font-size: 14px; }
+            .main-view { padding: 30px; }
+            .music-grid { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 20px; }
+            .player-bar { padding: 0 20px; }
+            .p-controls { gap: 20px; }
+            .p-mid { max-width: 400px; }
+        }
+
+        /* MOBILE (768px and below) */
+        @media (max-width: 768px) {
+            body { overflow-y: auto; height: auto; min-height: 100vh; }
+            .app-shell { flex-direction: column; height: auto; min-height: 100vh; }
+            
+            .sidebar {
+                position: fixed; bottom: 0; left: 0; width: 100%; height: 70px;
+                flex-direction: row; justify-content: space-around; align-items: center;
+                padding: 0 5px; border-right: none; border-top: 1px solid var(--glass-border);
+                gap: 0; padding-bottom: env(safe-area-inset-bottom);
+                height: calc(70px + env(safe-area-inset-bottom));
+                background: rgba(10, 10, 10, 0.95);
+            }
+            .brand, .sidebar > div:last-child { display: none !important; }
+            .sidebar nav { flex-direction: row !important; width: 100%; justify-content: space-around; gap: 5px !important; }
+            .nav-item { 
+                flex-direction: column; gap: 4px; padding: 8px 5px; 
+                font-size: 10px; flex: 1; text-align: center; 
+                background: none !important; color: var(--text-sec);
+            }
+            .nav-item.active { color: var(--orange); }
+            .nav-item svg { width: 20px; height: 20px; }
+
+            .main-view { padding: 15px; padding-bottom: 180px; width: 100%; flex: none; }
+            
+            .top-bar { flex-direction: column-reverse; gap: 15px; align-items: stretch; margin-bottom: 25px; }
+            .user-pill { align-self: flex-end; padding: 6px 12px; }
+            .search-bar { max-width: 100% !important; padding: 10px 15px; }
+
+            .section-h { font-size: 24px; margin-bottom: 15px; }
+            .music-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+            .music-card { padding: 10px; border-radius: 18px; }
+            .card-t { font-size: 13px; margin-bottom: 2px; }
+            .card-a { font-size: 11px; }
+            .card-art { border-radius: 12px; }
+
+            .player-bar {
+                bottom: calc(70px + env(safe-area-inset-bottom));
+                height: auto; padding: 12px 15px;
+                flex-direction: column; gap: 10px;
+                border-top: 1px solid rgba(255, 140, 0, 0.1);
+            }
+            .p-left { width: 100%; gap: 10px; justify-content: flex-start; }
+            .p-art { width: 40px; height: 40px; border-radius: 8px; }
+            .p-mid { width: 100%; gap: 6px; }
+            .p-controls { gap: 25px; }
+            .p-play { width: 42px; height: 42px; }
+            .p-right { display: none; }
+            .progress-container { gap: 8px; }
+            .p-time { width: 30px; font-size: 9px; }
+
+            #welcome-screen h2 { font-size: 28px !important; }
+            #welcome-screen p { font-size: 14px !important; padding: 0 20px; }
+            .login-card { width: 92%; padding: 35px 20px; border-radius: 25px; }
+            .loading-logo { font-size: 36px; }
+        }
     </style>
 </head>
 <body>
